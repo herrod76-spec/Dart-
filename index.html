@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>DART PRO - UNIVERSAL</title>
+    <title>DART PRO - AWO KV WESEL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -17,7 +17,6 @@
             height: 100vh;
         }
 
-        /* Device View Logic */
         .view-ipad { display: flex; flex-direction: row; }
         .view-iphone { display: flex; flex-direction: column; }
 
@@ -28,20 +27,20 @@
             border-right: 1px solid #1e293b; 
         }
 
-        .main-content { flex: 1; overflow-y: auto; height: 100vh; }
-        .iphone-mode .main-content { padding-bottom: 80px; }
+        .main-content { flex: 1; overflow-y: auto; height: 100vh; position: relative; }
+        .iphone-mode .main-content { padding-bottom: 90px; }
 
-        /* Navigation */
         .mobile-nav {
             position: fixed;
             bottom: 0; left: 0; right: 0;
-            height: 75px;
+            height: 85px;
             background: #020617;
             border-top: 1px solid #1e293b;
             display: flex;
             justify-content: space-around;
             align-items: center;
             z-index: 50;
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         .setup-card { background: #1e293b; border: 2px solid #334155; transition: all 0.2s; cursor: pointer; }
@@ -57,94 +56,97 @@
             background: #1e293b; 
             border: 1px solid #334155; 
             font-size: 1.2rem;
+            cursor: pointer;
         }
+        .key-btn:active { background: #334155; }
         .active-mod { background: var(--accent) !important; color: white; border-color: white !important; }
         
         .player-card { background: #1e293b; padding: 12px; border-radius: 16px; border: 2px solid transparent; }
         .player-card.active { border-color: var(--accent); box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); }
 
-        /* Launcher Styles */
         #launcher {
             position: fixed; inset: 0; background: #0f172a; z-index: 1000;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
+
+        .stat-box { background: #1e293b; padding: 1rem; border-radius: 1rem; border: 1px solid #334155; }
     </style>
 </head>
 <body class="view-ipad" id="app-body">
 
     <!-- LAUNCHER SCREEN -->
     <div id="launcher">
-        <h1 class="text-4xl font-black italic mb-2">DART<span class="text-red-500">PRO</span></h1>
-        <p class="text-slate-500 text-xs font-bold uppercase tracking-[0.3em] mb-12 text-center">AWO KV WESEL - UNIVERSAL APP</p>
+        <h1 class="text-5xl font-black italic mb-2 tracking-tighter">DART<span class="text-red-500">PRO</span></h1>
+        <p class="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mb-16">AWO KV WESEL • Pädagogik Edition</p>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl px-6">
-            <button onclick="launch('ipad')" class="p-8 bg-slate-800 rounded-3xl border-2 border-slate-700 hover:border-red-500 transition-all text-left">
-                <span class="text-4xl block mb-4">💻</span>
-                <span class="text-xl font-black block">iPad Pro M5</span>
+            <button onclick="launch('ipad')" class="p-8 bg-slate-800/50 rounded-[2.5rem] border-2 border-slate-700 hover:border-red-500 transition-all text-left group">
+                <span class="text-4xl block mb-4 group-hover:scale-110 transition-transform">💻</span>
+                <span class="text-xl font-black block text-white">iPad Pro M5</span>
                 <span class="text-slate-400 text-sm">Desktop-Layout mit Sidebar</span>
             </button>
-            <button onclick="launch('iphone')" class="p-8 bg-slate-800 rounded-3xl border-2 border-slate-700 hover:border-red-500 transition-all text-left">
-                <span class="text-4xl block mb-4">📱</span>
-                <span class="text-xl font-black block">iPhone 15 Pro</span>
+            <button onclick="launch('iphone')" class="p-8 bg-slate-800/50 rounded-[2.5rem] border-2 border-slate-700 hover:border-red-500 transition-all text-left group">
+                <span class="text-4xl block mb-4 group-hover:scale-110 transition-transform">📱</span>
+                <span class="text-xl font-black block text-white">iPhone 15 Pro</span>
                 <span class="text-slate-400 text-sm">Mobile-Layout mit Tab-Bar</span>
             </button>
         </div>
     </div>
 
-    <!-- SIDEBAR (Only visible in iPad mode) -->
+    <!-- SIDEBAR (iPad) -->
     <aside class="sidebar hidden lg:flex flex-col" id="desktop-sidebar">
         <div class="p-8">
             <h2 class="text-xl font-black italic">DART<span class="text-red-500">PRO</span></h2>
-            <p class="text-[8px] text-slate-500 font-bold uppercase">Dashboard</p>
+            <p class="text-[8px] text-slate-500 font-bold uppercase tracking-widest">AWO KV Wesel</p>
         </div>
         <nav class="flex-1 px-4 space-y-2">
-            <button onclick="switchPage('setup')" class="w-full text-left p-4 hover:bg-slate-800 rounded-2xl font-bold transition-all">🏠 Setup</button>
-            <button onclick="openAnalysis()" class="w-full text-left p-4 hover:bg-slate-800 rounded-2xl font-bold text-yellow-500 transition-all">📊 Analyse</button>
+            <button onclick="switchPage('setup')" class="w-full text-left p-4 hover:bg-slate-800 rounded-2xl font-bold transition-all flex items-center gap-3"><span>🏠</span> Setup</button>
+            <button onclick="openAnalysis()" class="w-full text-left p-4 hover:bg-slate-800 rounded-2xl font-bold text-yellow-500 transition-all flex items-center gap-3"><span>📊</span> Analyse</button>
             <div class="h-px bg-slate-800 my-4"></div>
             <div class="text-[10px] font-black text-slate-600 uppercase px-4 mb-2">Schnellstart</div>
-            <button onclick="quickStart('501')" class="w-full text-left p-3 hover:bg-slate-800 rounded-xl text-sm font-semibold">🏆 501 DO</button>
-            <button onclick="quickStart('cricket')" class="w-full text-left p-3 hover:bg-slate-800 rounded-xl text-sm font-semibold">🏏 Cricket</button>
+            <button onclick="quickStart('501')" class="w-full text-left p-3 hover:bg-slate-800 rounded-xl text-sm font-semibold opacity-70 hover:opacity-100 transition-opacity">🏆 501 DO</button>
+            <button onclick="quickStart('highscore')" class="w-full text-left p-3 hover:bg-slate-800 rounded-xl text-sm font-semibold opacity-70 hover:opacity-100 transition-opacity">📈 Highscore</button>
         </nav>
+        <div class="p-6 bg-slate-900 m-4 rounded-2xl border border-slate-800 text-center">
+            <div id="timer-display" class="text-2xl font-black tabular-nums">45:00</div>
+            <button onclick="toggleTimer()" class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1">Trainingstimer</button>
+        </div>
     </aside>
 
     <main class="main-content">
         <!-- SETUP PAGE -->
         <section id="page-setup" class="p-6 lg:p-16">
             <header class="mb-12">
-                <h2 class="text-4xl lg:text-6xl font-black italic uppercase italic">Match <span class="text-red-500">Center</span></h2>
-                <p class="text-slate-500 font-bold text-sm">Konfiguriere das Training für die AWO Jugendlichen</p>
+                <h2 class="text-5xl lg:text-7xl font-black italic uppercase italic tracking-tighter">Match <span class="text-red-500">Setup</span></h2>
+                <p class="text-slate-500 font-bold text-sm mt-2">Pädagogisch wertvolles Dart-Training für Jugendliche</p>
             </header>
 
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-10">
-                <!-- Players -->
                 <div class="space-y-4">
-                    <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest">1. Spieleranzahl</h3>
+                    <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2">1. Spieleranzahl</h3>
                     <div class="grid grid-cols-3 gap-3">
-                        <button onclick="setPlayerCount(1)" id="pc-1" class="setup-card p-6 rounded-2xl font-black text-xl selected">1</button>
-                        <button onclick="setPlayerCount(2)" id="pc-2" class="setup-card p-6 rounded-2xl font-black text-xl">2</button>
-                        <button onclick="setPlayerCount(3)" id="pc-3" class="setup-card p-6 rounded-2xl font-black text-xl">3</button>
-                        <button onclick="setPlayerCount(4)" id="pc-4" class="setup-card p-6 rounded-2xl font-black text-xl">4</button>
-                        <button onclick="setPlayerCount(5)" id="pc-5" class="setup-card p-6 rounded-2xl font-black text-xl">5</button>
-                        <button onclick="setPlayerCount(6)" id="pc-6" class="setup-card p-6 rounded-2xl font-black text-xl">6</button>
+                        <button onclick="setPlayerCount(1)" id="pc-1" class="setup-card p-6 rounded-[1.5rem] font-black text-xl selected">1</button>
+                        <button onclick="setPlayerCount(2)" id="pc-2" class="setup-card p-6 rounded-[1.5rem] font-black text-xl">2</button>
+                        <button onclick="setPlayerCount(3)" id="pc-3" class="setup-card p-6 rounded-[1.5rem] font-black text-xl">3</button>
+                        <button onclick="setPlayerCount(4)" id="pc-4" class="setup-card p-6 rounded-[1.5rem] font-black text-xl">4</button>
+                        <button onclick="setPlayerCount(5)" id="pc-5" class="setup-card p-6 rounded-[1.5rem] font-black text-xl">5</button>
+                        <button onclick="setPlayerCount(6)" id="pc-6" class="setup-card p-6 rounded-[1.5rem] font-black text-xl">6</button>
                     </div>
                 </div>
 
-                <!-- Games -->
                 <div class="space-y-4">
-                    <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest">2. Spielmodus</h3>
+                    <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2">2. Spielmodus</h3>
                     <div class="grid grid-cols-2 gap-3">
                         <button onclick="setMode('501')" id="m-501" class="setup-card p-4 rounded-2xl font-bold text-sm selected">🏆 501 / 301</button>
-                        <button onclick="setMode('cricket')" id="m-cricket" class="setup-card p-4 rounded-2xl font-bold text-sm">🏏 Cricket</button>
                         <button onclick="setMode('highscore')" id="m-highscore" class="setup-card p-4 rounded-2xl font-bold text-sm">📈 High Score</button>
                         <button onclick="setMode('elimination')" id="m-elimination" class="setup-card p-4 rounded-2xl font-bold text-sm">🚫 Elimination</button>
-                        <button onclick="setMode('killer')" id="m-killer" class="setup-card p-4 rounded-2xl font-bold text-sm">🗡️ Killer</button>
-                        <button onclick="setMode('atc')" id="m-atc" class="setup-card p-4 rounded-2xl font-bold text-sm">⏱️ Around the Clock</button>
                         <button onclick="setMode('bobs27')" id="m-bobs27" class="setup-card p-4 rounded-2xl font-bold text-sm">📉 Bob's 27</button>
-                        <button onclick="setMode('golf')" id="m-golf" class="setup-card p-4 rounded-2xl font-bold text-sm">⛳ Golf</button>
+                        <button onclick="setMode('atc')" id="m-atc" class="setup-card p-4 rounded-2xl font-bold text-sm">⏱️ Around Clock</button>
+                        <button onclick="setMode('killer')" id="m-killer" class="setup-card p-4 rounded-2xl font-bold text-sm">🗡️ Killer</button>
                     </div>
                 </div>
             </div>
 
-            <button onclick="initGame()" class="w-full mt-12 py-8 bg-white text-black font-black rounded-[2rem] uppercase tracking-[0.2em] text-2xl hover:bg-red-500 hover:text-white transition-all shadow-2xl">Spiel Starten</button>
+            <button onclick="initGame()" class="w-full mt-12 py-8 bg-white text-black font-black rounded-[2.5rem] uppercase tracking-[0.3em] text-2xl hover:bg-red-500 hover:text-white transition-all shadow-2xl">Start Game</button>
         </section>
 
         <!-- GAME PAGE -->
@@ -153,39 +155,38 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="lg:col-span-2">
-                    <!-- Score Input Display -->
-                    <div class="bg-slate-900 border border-slate-700 p-8 rounded-[2.5rem] flex justify-between items-center mb-8">
-                        <div class="flex gap-3" id="dart-previews">
-                            <div class="w-12 h-12 lg:w-20 lg:h-20 bg-slate-950 rounded-2xl flex items-center justify-center font-black text-3xl">-</div>
-                            <div class="w-12 h-12 lg:w-20 lg:h-20 bg-slate-950 rounded-2xl flex items-center justify-center font-black text-3xl">-</div>
-                            <div class="w-12 h-12 lg:w-20 lg:h-20 bg-slate-950 rounded-2xl flex items-center justify-center font-black text-3xl">-</div>
+                    <div class="bg-slate-900 border border-slate-700 p-8 rounded-[3rem] flex justify-between items-center mb-8">
+                        <div class="flex gap-2 lg:gap-4" id="dart-previews">
+                            <div class="w-14 h-14 lg:w-20 lg:h-20 bg-slate-950 rounded-2xl flex items-center justify-center font-black text-3xl">-</div>
+                            <div class="w-14 h-14 lg:w-20 lg:h-20 bg-slate-950 rounded-2xl flex items-center justify-center font-black text-3xl">-</div>
+                            <div class="w-14 h-14 lg:w-20 lg:h-20 bg-slate-950 rounded-2xl flex items-center justify-center font-black text-3xl">-</div>
                         </div>
                         <div class="text-right">
-                            <p class="text-[10px] font-black text-slate-500 uppercase">Aktueller Score</p>
-                            <h3 id="turn-total" class="text-6xl lg:text-8xl font-black italic">0</h3>
+                            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Turn Total</p>
+                            <h3 id="turn-total" class="text-7xl lg:text-8xl font-black italic tabular-nums leading-none">0</h3>
                         </div>
                     </div>
 
-                    <!-- Numpad -->
                     <div class="grid grid-cols-3 gap-3 mb-6">
                         <button onclick="setMult(1)" id="mod-1" class="py-5 bg-slate-800 rounded-2xl font-black active-mod">SINGLE</button>
                         <button onclick="setMult(2)" id="mod-2" class="py-5 bg-slate-800 rounded-2xl font-black">DOUBLE</button>
                         <button onclick="setMult(3)" id="mod-3" class="py-5 bg-slate-800 rounded-2xl font-black">TRIPLE</button>
                     </div>
                     <div id="dart-numpad" class="grid grid-cols-5 md:grid-cols-7 gap-2 mb-6"></div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button onclick="registerHit(0)" class="bg-slate-700 py-6 rounded-2xl font-black uppercase text-xl">Miss</button>
-                        <button onclick="registerHit(25)" class="bg-orange-600 py-6 rounded-2xl font-black uppercase text-xl">Bull</button>
+                    <div class="grid grid-cols-4 gap-3">
+                        <button onclick="registerHit(0)" class="col-span-1 bg-slate-700 py-6 rounded-2xl font-black uppercase text-xl">Miss</button>
+                        <button onclick="registerHit(25)" class="col-span-1 bg-orange-600 py-6 rounded-2xl font-black uppercase text-xl">Bull</button>
+                        <button onclick="undoLast()" class="col-span-1 bg-slate-800/50 py-6 rounded-2xl font-bold text-slate-400 border border-slate-700">Undo</button>
+                        <button onclick="openAnalysis()" class="col-span-1 bg-yellow-600/10 py-6 rounded-2xl font-bold text-yellow-500 border border-yellow-600/30">Stats</button>
                     </div>
                 </div>
 
-                <!-- Info Column -->
                 <div class="space-y-6">
-                    <div class="bg-slate-900/50 p-8 rounded-[2rem] border border-slate-800 text-center">
-                        <p class="text-[10px] font-black text-slate-500 uppercase mb-2">Modus</p>
-                        <div id="mode-label" class="text-2xl font-black text-red-500 uppercase tracking-tighter">-</div>
+                    <div class="bg-slate-900/80 p-8 rounded-[2.5rem] border border-slate-800 text-center">
+                        <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Game Mode</p>
+                        <div id="mode-label" class="text-3xl font-black text-red-500 uppercase italic tracking-tighter">-</div>
                     </div>
-                    <div class="bg-slate-800/30 p-6 rounded-[2rem] border border-slate-700 h-64">
+                    <div class="bg-slate-800/20 p-6 rounded-[2.5rem] border border-slate-700 h-72">
                         <canvas id="liveChart"></canvas>
                     </div>
                 </div>
@@ -193,31 +194,35 @@
         </section>
     </main>
 
-    <!-- MOBILE NAVIGATION (Only in iPhone mode) -->
+    <!-- MOBILE NAVIGATION -->
     <nav class="mobile-nav hidden" id="iphone-nav">
-        <button onclick="switchPage('setup')" class="flex flex-col items-center gap-1 text-[10px] font-bold text-slate-500 active:text-red-500">
+        <button onclick="switchPage('setup')" class="flex flex-col items-center gap-1 text-[9px] font-bold text-slate-500">
             <span class="text-2xl">🏠</span>Setup
         </button>
-        <button onclick="switchPage('game')" class="flex flex-col items-center gap-1 text-[10px] font-bold text-slate-500 active:text-red-500">
-            <span class="text-2xl">🎯</span>Score
+        <button onclick="switchPage('game')" class="flex flex-col items-center gap-1 text-[9px] font-bold text-slate-500">
+            <span class="text-2xl">🎯</span>Scorer
         </button>
-        <button onclick="openAnalysis()" class="flex flex-col items-center gap-1 text-[10px] font-bold text-slate-500 active:text-red-500">
+        <button onclick="openAnalysis()" class="flex flex-col items-center gap-1 text-[9px] font-bold text-yellow-600">
             <span class="text-2xl">📊</span>Analyse
         </button>
     </nav>
 
     <!-- ANALYSIS MODAL -->
     <div id="analysis-modal" class="fixed inset-0 bg-black/95 hidden z-[2000] flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-700 w-full max-w-5xl max-h-[90vh] rounded-[3rem] p-10 overflow-y-auto relative">
-            <button onclick="closeAnalysis()" class="absolute top-8 right-8 text-slate-500 text-4xl">&times;</button>
-            <h2 class="text-4xl font-black italic uppercase text-white mb-10">Analyse <span class="text-red-500">Center</span></h2>
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-6xl max-h-[90vh] rounded-[3rem] p-8 lg:p-12 overflow-y-auto relative">
+            <button onclick="closeAnalysis()" class="absolute top-8 right-8 text-slate-500 text-4xl hover:text-white transition-colors">&times;</button>
+            <h2 class="text-4xl lg:text-6xl font-black italic uppercase text-white mb-2">Leistungs<span class="text-red-500">analyse</span></h2>
+            <p class="text-slate-500 font-bold text-xs uppercase tracking-widest mb-10">Dokumentation für AWO KV Wesel</p>
+            
             <div id="ana-stats" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10"></div>
+
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="bg-slate-800/50 p-8 rounded-3xl">
-                    <h4 class="text-xs font-black text-slate-500 uppercase mb-6">Heatmap</h4>
+                <div class="bg-slate-800/30 p-8 rounded-[2.5rem] border border-slate-700">
+                    <h4 class="text-xs font-black text-slate-500 uppercase mb-6 tracking-widest text-center">Treffer Heatmap</h4>
                     <div id="heatmap-grid" class="grid grid-cols-7 gap-2"></div>
                 </div>
-                <div class="bg-slate-800/50 p-8 rounded-3xl">
+                <div class="bg-slate-800/30 p-8 rounded-[2.5rem] border border-slate-700">
+                    <h4 class="text-xs font-black text-slate-500 uppercase mb-6 tracking-widest text-center">Spielverlauf</h4>
                     <canvas id="progChart"></canvas>
                 </div>
             </div>
@@ -227,11 +232,10 @@
     <script>
         let state = {
             players: [], activeIdx: 0, playerCount: 1, mode: '501', multiplier: 1, turnDarts: [],
-            heatmap: {}, history: {s:0, d:0, t:0, m:0}, view: 'ipad'
+            heatmap: {}, history: {s:0, d:0, t:0, m:0}, view: 'ipad', startTime: Date.now()
         };
         let lChart, pChart;
 
-        // LAUNCHER LOGIC
         function launch(device) {
             state.view = device;
             document.getElementById('launcher').style.display = 'none';
@@ -269,7 +273,9 @@
 
         function initGame() {
             state.players = Array.from({length: state.playerCount}, (_,i) => ({
-                name: `P${i+1}`, score: (state.mode==='501'?501:(state.mode==='bobs27'?27:0)), darts: 0, total: 0, path: []
+                name: `Spieler ${i+1}`, 
+                score: (state.mode==='501'?501:(state.mode==='bobs27'?27:0)), 
+                darts: 0, total: 0, path: [], turnHistory: []
             }));
             state.activeIdx = 0; state.turnDarts = []; state.heatmap = {};
             state.history = {s:0, d:0, t:0, m:0};
@@ -291,12 +297,15 @@
             const p = state.players[state.activeIdx];
 
             state.heatmap[val] = (state.heatmap[val] || 0) + 1;
-            if(val === 0) state.history.m++; else if(m===1) state.history.s++; else if(m===2) state.history.d++; else state.history.t++;
+            if(val === 0) state.history.m++; 
+            else if(m===1) state.history.s++; 
+            else if(m===2) state.history.d++; 
+            else state.history.t++;
 
             if(state.mode === '501') {
                 if(p.score - pts >= 2 || p.score - pts === 0) p.score -= pts;
             } else if(state.mode === 'bobs27') {
-                // Bob's 27 Logic would go here
+                // Bob's 27: Aktuelles Doppel trainieren (simuliert hier einfach Score)
                 p.score += pts; 
             } else { p.score += pts; }
 
@@ -304,7 +313,11 @@
             state.turnDarts.push(pts);
 
             if(state.turnDarts.length === 3 || (state.mode === '501' && p.score === 0)) {
-                if(p.score === 0 && state.mode === '501') { alert(p.name + " Check!"); switchPage('setup'); return; }
+                if(p.score === 0 && state.mode === '501') { 
+                    alert("Glückwunsch! " + p.name + " hat gewonnen."); 
+                    switchPage('setup'); 
+                    return; 
+                }
                 state.turnDarts = [];
                 state.activeIdx = (state.activeIdx + 1) % state.playerCount;
             }
@@ -312,13 +325,18 @@
             setMult(1); renderPlayers(); updateUI(); updateLiveChart();
         }
 
+        function undoLast() {
+            // Vereinfachter Undo-Mechanismus
+            alert("Undo wird in dieser Version noch implementiert.");
+        }
+
         function renderPlayers() {
             document.getElementById('player-status-grid').innerHTML = state.players.map((p, i) => `
                 <div class="player-card ${i===state.activeIdx?'active':''}">
-                    <div class="flex justify-between text-[8px] font-black uppercase text-slate-500 mb-1">
+                    <div class="flex justify-between text-[9px] font-black uppercase text-slate-500 mb-1">
                         <span>${p.name}</span><span>AVG: ${(p.darts?(p.total/(p.darts/3)):0).toFixed(1)}</span>
                     </div>
-                    <div class="text-3xl font-black text-white tabular-nums">${p.score}</div>
+                    <div class="text-4xl font-black text-white tabular-nums">${p.score}</div>
                 </div>
             `).join('');
         }
@@ -328,7 +346,7 @@
             for(let i=0; i<3; i++) {
                 const v = state.turnDarts[i];
                 divs[i].innerText = v !== undefined ? v : "-";
-                divs[i].className = `w-12 h-12 lg:w-20 lg:h-20 rounded-2xl flex items-center justify-center font-black text-xl lg:text-3xl ${v!==undefined?'bg-red-600 text-white':'bg-slate-950 text-slate-800'}`;
+                divs[i].className = `w-14 h-14 lg:w-20 lg:h-20 rounded-2xl flex items-center justify-center font-black text-xl lg:text-3xl ${v!==undefined?'bg-red-600 text-white border-2 border-white/20 shadow-lg shadow-red-500/20':'bg-slate-950 text-slate-800'}`;
             }
             document.getElementById('turn-total').innerText = state.turnDarts.reduce((a,b)=>a+b, 0);
         }
@@ -336,20 +354,33 @@
         function initNumpad() {
             const np = document.getElementById('dart-numpad');
             np.innerHTML = "";
-            for(let i=1; i<=20; i++) {
+            [20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1].forEach(i => {
                 const b = document.createElement('div');
-                b.className = 'key-btn cursor-pointer hover:bg-slate-700';
+                b.className = 'key-btn';
                 b.innerText = i;
                 b.onclick = () => registerHit(i);
                 np.appendChild(b);
-            }
+            });
         }
 
         function initCharts() {
             lChart = new Chart(document.getElementById('liveChart'), {
                 type: 'doughnut',
-                data: { datasets: [{ data:[1,1,1,1], backgroundColor:['#334155','#ef4444','#f59e0b','#020617'], borderWidth:0 }] },
-                options: { plugins:{legend:{display:false}}, cutout:'85%' }
+                data: { 
+                    labels: ['S', 'D', 'T', 'M'],
+                    datasets: [{ 
+                        data:[1,1,1,1], 
+                        backgroundColor:['#334155','#ef4444','#f59e0b','#020617'], 
+                        borderWidth:0,
+                        hoverOffset: 10
+                    }] 
+                },
+                options: { 
+                    plugins:{ legend:{display:false} }, 
+                    cutout:'85%',
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
             });
         }
 
@@ -364,10 +395,10 @@
             const acc = total ? Math.round(((total-state.history.m)/total)*100) : 0;
             
             document.getElementById('ana-stats').innerHTML = `
-                <div class="bg-slate-800 p-6 rounded-2xl"><p class="text-[8px] font-bold text-slate-500 uppercase">Präzision</p><p class="text-3xl font-black">${acc}%</p></div>
-                <div class="bg-slate-800 p-6 rounded-2xl"><p class="text-[8px] font-bold text-slate-500 uppercase">Darts</p><p class="text-3xl font-black">${total}</p></div>
-                <div class="bg-slate-800 p-6 rounded-2xl"><p class="text-[8px] font-bold text-slate-500 uppercase">Singles</p><p class="text-3xl font-black">${state.history.s}</p></div>
-                <div class="bg-slate-800 p-6 rounded-2xl"><p class="text-[8px] font-bold text-slate-500 uppercase">Doubles</p><p class="text-3xl font-black">${state.history.d}</p></div>
+                <div class="stat-box"><p class="text-[9px] font-black text-slate-500 uppercase mb-1">Präzision</p><p class="text-4xl font-black text-white">${acc}%</p></div>
+                <div class="stat-box"><p class="text-[9px] font-black text-slate-500 uppercase mb-1">Darts geworfen</p><p class="text-4xl font-black text-white">${total}</p></div>
+                <div class="stat-box"><p class="text-[9px] font-black text-slate-500 uppercase mb-1">Triples</p><p class="text-4xl font-black text-yellow-500">${state.history.t}</p></div>
+                <div class="stat-box"><p class="text-[9px] font-black text-slate-500 uppercase mb-1">Misses</p><p class="text-4xl font-black text-slate-600">${state.history.m}</p></div>
             `;
 
             const heat = document.getElementById('heatmap-grid');
@@ -375,23 +406,54 @@
             [20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,25].forEach(v => {
                 const count = state.heatmap[v] || 0;
                 const op = Math.min(1, count / 5);
-                heat.innerHTML += `<div class="p-2 rounded text-center text-[10px] font-bold" style="background:rgba(239,68,68,${op}); color:${op>0.3?'white':'#475569'}">${v===25?'B':v}</div>`;
+                heat.innerHTML += `<div class="p-3 rounded-xl text-center text-[10px] font-black border border-slate-700/50 transition-all" style="background:rgba(239,68,68,${op}); color:${op>0.3?'white':'#475569'}">${v===25?'B':v}</div>`;
             });
 
             if(pChart) pChart.destroy();
+            const datasets = state.players.map((p,i)=>({
+                label: p.name, 
+                data: p.path, 
+                borderColor: i===0?'#ef4444':'#3b82f6', 
+                backgroundColor: i===0?'rgba(239,68,68,0.1)':'rgba(59,130,246,0.1)',
+                fill: true,
+                tension:0.4,
+                pointRadius: 4,
+                pointBackgroundColor: '#fff'
+            }));
+
             pChart = new Chart(document.getElementById('progChart'), {
                 type: 'line',
                 data: {
                     labels: state.players[0].path.map((_,i)=>i+1),
-                    datasets: state.players.map((p,i)=>({
-                        label: p.name, data: p.path, borderColor: i===0?'#ef4444':'#3b82f6', tension:0.3
-                    }))
+                    datasets: datasets
                 },
-                options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}} }
+                options: { 
+                    plugins:{legend:{display:false}}, 
+                    scales:{
+                        y:{ beginAtZero:true, grid:{color:'#1e293b'} },
+                        x:{ grid:{display:false} }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
             });
         }
+
         function closeAnalysis() { document.getElementById('analysis-modal').classList.add('hidden'); }
         function quickStart(m) { setMode(m); initGame(); }
+
+        // Timer Logic
+        let timerTime = 2700, timerActive = false;
+        function toggleTimer() { timerActive = !timerActive; }
+        setInterval(() => {
+            if(timerActive && timerTime > 0) {
+                timerTime--;
+                const m = Math.floor(timerTime/60);
+                const s = timerTime%60;
+                document.getElementById('timer-display').innerText = `${m}:${s.toString().padStart(2,'0')}`;
+            }
+        }, 1000);
     </script>
 </body>
 </html>
+

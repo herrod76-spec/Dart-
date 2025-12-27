@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PRO SCORER - AWO KV Wesel</title>
+    <title>PRO SCORER</title>
     
-    <!-- App Icon & Web App Meta -->
-    <link rel="apple-touch-icon" href="image.png">
+    <!-- Web App Meta für iPad Pro M5 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="ProScorer">
+    
+    <!-- App Icon - Nutzt das hochgeladene Foto -->
+    <link rel="apple-touch-icon" href="image.png">
+    <link rel="icon" type="image/png" href="image.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -23,6 +26,7 @@
             font-family: -apple-system, system-ui, sans-serif;
             touch-action: manipulation;
             padding-top: env(safe-area-inset-top);
+            user-select: none;
         }
         .key-btn {
             aspect-ratio: 1 / 1;
@@ -34,9 +38,10 @@
             background: #1e293b;
             -webkit-tap-highlight-color: transparent;
             font-size: 1.25rem;
+            transition: transform 0.1s;
         }
-        .key-btn:active { background: var(--awo-red); transform: scale(0.95); }
-        .active-mod { background: var(--awo-red) !important; color: white; }
+        .key-btn:active { background: var(--awo-red); transform: scale(0.92); }
+        .active-mod { background: var(--awo-red) !important; color: white; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
         .player-card { transition: all 0.3s ease; border-width: 4px; }
         .player-active { border-color: var(--awo-red) !important; background-color: #1e293b !important; opacity: 1 !important; transform: scale(1.02); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -49,13 +54,13 @@
         <!-- Header -->
         <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-red-600 flex items-center justify-center shadow-lg overflow-hidden">
-                    <img src="image.png" alt="AWO" onerror="this.style.display='none'" class="w-full h-full object-cover">
-                    <span class="text-white font-black text-xs">AWO</span>
+                <!-- App Logo aus dem Foto -->
+                <div class="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-2xl overflow-hidden border-2 border-slate-700">
+                    <img src="image.png" alt="AWO Logo" class="w-full h-full object-cover">
                 </div>
                 <div>
                     <h1 class="text-xl font-black text-red-500 leading-none">PRO SCORER</h1>
-                    <p class="text-[8px] text-slate-500 uppercase tracking-tighter">AWO KV Wesel | iPad Pro M5</p>
+                    <p class="text-[8px] text-slate-500 uppercase tracking-widest">AWO KV Wesel | iPad Pro M5</p>
                 </div>
             </div>
 
@@ -69,17 +74,17 @@
                     <option value="5">5 Spieler</option>
                     <option value="6">6 Spieler</option>
                 </select>
-                <button onclick="setMode('301')" id="tab-301" class="px-3 py-1 text-[10px] font-bold uppercase border-b-2 border-transparent transition-all">301</button>
-                <button onclick="setMode('501')" id="tab-501" class="px-3 py-1 text-[10px] font-bold uppercase border-b-2 border-red-500 text-red-500 transition-all">501</button>
-                <button onclick="setMode('highscore')" id="tab-highscore" class="px-3 py-1 text-[10px] font-bold uppercase border-b-2 border-transparent transition-all">Highscore</button>
-                <button onclick="setMode('shanghai')" id="tab-shanghai" class="px-3 py-1 text-[10px] font-bold uppercase border-b-2 border-transparent transition-all">Shanghai</button>
+                <button onclick="setMode('301')" id="tab-301" class="px-3 py-1 text-[10px] font-bold uppercase border-b-2 border-transparent">301</button>
+                <button onclick="setMode('501')" id="tab-501" class="px-3 py-1 text-[10px] font-bold uppercase border-b-2 border-red-500 text-red-500">501</button>
+                <button onclick="setMode('highscore')" id="tab-highscore" class="px-3 py-1 text-[10px] font-bold uppercase border-b-2 border-transparent">Highscore</button>
             </div>
         </div>
 
-        <!-- Player Grid -->
+        <!-- Spieler Anzeige -->
         <div id="player-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6"></div>
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Eingabe Bereich -->
             <div class="lg:col-span-3 space-y-4">
                 <div class="flex items-center justify-between bg-slate-800/50 p-4 rounded-2xl border border-slate-700">
                     <div class="flex gap-3" id="turn-darts">
@@ -109,13 +114,14 @@
                 </div>
             </div>
 
+            <!-- Stats -->
             <div class="space-y-4">
                 <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700">
-                    <h3 class="text-xs font-black mb-4 text-slate-400 uppercase tracking-widest">Statistik</h3>
+                    <h3 class="text-xs font-black mb-4 text-slate-400 uppercase tracking-widest">Log</h3>
                     <div id="legs-stats" class="space-y-2"></div>
                 </div>
-                <button onclick="copyToNumbers()" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 rounded-2xl text-xs font-bold transition-colors">
-                    Statistik kopieren
+                <button onclick="copyToNumbers()" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 rounded-2xl text-xs font-bold shadow-lg">
+                    Export für Numbers
                 </button>
             </div>
         </div>
@@ -151,8 +157,7 @@
         }
 
         function getInitialScore() {
-            if (gameState.mode === 'highscore' || gameState.mode === 'shanghai') return 0;
-            return parseInt(gameState.mode) || 501;
+            return gameState.mode === 'highscore' ? 0 : parseInt(gameState.mode);
         }
 
         function setMode(m) {
@@ -174,23 +179,23 @@
             gameState.players.forEach((p, i) => {
                 const card = document.createElement('div');
                 card.id = `p-card-${i}`;
-                card.className = `player-card p-3 rounded-2xl border-2 transition-all duration-300`;
+                card.className = `player-card p-3 rounded-2xl border-2 transition-all duration-300 shadow-lg`;
                 card.innerHTML = `
                     <div class="flex justify-between text-[8px] font-bold text-slate-500">
-                        <span>P${p.id}</span>
-                        <span>Legs: ${p.legs}</span>
+                        <span>SPIELER ${p.id}</span>
+                        <span>LEGS: ${p.legs}</span>
                     </div>
                     <div id="p-score-${i}" class="text-3xl font-black my-1 text-white tabular-nums">${p.score}</div>
                     <div class="text-[8px] text-slate-400 flex justify-between">
                         <span>AVG: <span id="p-avg-${i}">0</span></span>
-                        <span>Darts: <span id="p-darts-${i}">0</span></span>
+                        <span>D: <span id="p-darts-${i}">0</span></span>
                     </div>
                 `;
                 grid.appendChild(card);
 
                 const legRow = document.createElement('div');
                 legRow.className = "flex justify-between text-[10px] border-b border-slate-700 pb-1";
-                legRow.innerHTML = `<span class="text-slate-400">Spieler ${p.id}</span><span class="font-bold text-white">${p.legs}</span>`;
+                legRow.innerHTML = `<span class="text-slate-400">Spieler ${p.id}</span><span class="font-bold text-white">${p.legs} Siege</span>`;
                 legBox.appendChild(legRow);
             });
         }
@@ -207,7 +212,7 @@
                     p.score -= points;
                     if (p.score === 0) {
                         p.legs++;
-                        alert(`Spieler ${p.id} gewinnt!`);
+                        alert(`Spieler ${p.id} hat gewonnen!`);
                         setupPlayers(true); 
                         return;
                     }
@@ -235,10 +240,6 @@
             if (gameState.activeIdx >= gameState.players.length) {
                 gameState.activeIdx = 0;
                 gameState.round++;
-                if (gameState.mode === 'highscore' && gameState.round > 7) {
-                    alert("Training beendet!");
-                    setupPlayers(true); return;
-                }
             }
             gameState.multiplier = 1;
             updateUI();
@@ -257,32 +258,32 @@
                 document.getElementById(`p-score-${i}`).innerText = p.score;
                 document.getElementById(`p-darts-${i}`).innerText = p.throws.length;
                 
-                const avg = p.throws.length ? ((Math.abs(getInitialScore() - p.score)) / (p.throws.length / 3)).toFixed(1) : "0.0";
+                const avg = p.throws.length ? (Math.abs(getInitialScore() - p.score) / (p.throws.length / 3)).toFixed(1) : "0.0";
                 document.getElementById(`p-avg-${i}`).innerText = avg;
             });
 
             const dots = document.getElementById('turn-darts').children;
             for(let i=0; i<3; i++) {
                 dots[i].innerText = gameState.turnDarts[i] !== undefined ? gameState.turnDarts[i] : "-";
-                dots[i].className = `w-10 h-10 rounded-full flex items-center justify-center font-bold transition-colors ${gameState.turnDarts[i] !== undefined ? 'bg-red-500 text-white' : 'bg-slate-700 text-slate-500'}`;
+                dots[i].className = `w-10 h-10 rounded-full flex items-center justify-center font-bold ${gameState.turnDarts[i] !== undefined ? 'bg-red-500 text-white' : 'bg-slate-700 text-slate-500'}`;
             }
 
-            document.getElementById('turn-total').innerText = gameState.turnDarts.reduce((a,b) => (typeof b === 'number' ? a+b : a), 0);
+            document.getElementById('turn-total').innerText = gameState.turnDarts.reduce((a,b) => a+b, 0);
             document.getElementById('round-label').innerText = `Runde ${gameState.round}`;
             
-            document.getElementById('btn-s').className = `flex-1 py-4 rounded-xl font-bold transition-all ${gameState.multiplier === 1 ? 'active-mod scale-105' : 'bg-slate-700'}`;
-            document.getElementById('btn-d').className = `flex-1 py-4 rounded-xl font-bold transition-all ${gameState.multiplier === 2 ? 'active-mod scale-105' : 'bg-slate-700'}`;
-            document.getElementById('btn-t').className = `flex-1 py-4 rounded-xl font-bold transition-all ${gameState.multiplier === 3 ? 'active-mod scale-105' : 'bg-slate-700'}`;
+            document.getElementById('btn-s').className = `flex-1 py-4 rounded-xl font-bold transition-all ${gameState.multiplier === 1 ? 'active-mod' : 'bg-slate-700'}`;
+            document.getElementById('btn-d').className = `flex-1 py-4 rounded-xl font-bold transition-all ${gameState.multiplier === 2 ? 'active-mod' : 'bg-slate-700'}`;
+            document.getElementById('btn-t').className = `flex-1 py-4 rounded-xl font-bold transition-all ${gameState.multiplier === 3 ? 'active-mod' : 'bg-slate-700'}`;
         }
 
         function setMultiplier(m) { gameState.multiplier = m; updateUI(); }
         function undo() { if (gameState.history.length) { gameState = gameState.history.pop(); updateUI(); } }
-        function resetGame() { if(confirm("Spiel komplett zurücksetzen?")) setupPlayers(false); }
+        function resetGame() { if(confirm("Spiel zurücksetzen?")) setupPlayers(false); }
 
         function copyToNumbers() {
             let csv = "Spieler;Score;Legs;Avg\n";
             gameState.players.forEach(p => {
-                const avg = p.throws.length ? ((Math.abs(getInitialScore() - p.score)) / (p.throws.length / 3)).toFixed(1) : "0.0";
+                const avg = p.throws.length ? (Math.abs(getInitialScore() - p.score) / (p.throws.length / 3)).toFixed(1) : "0.0";
                 csv += `${p.id};${p.score};${p.legs};${avg}\n`;
             });
             const el = document.createElement('textarea');
@@ -290,7 +291,7 @@
             document.body.appendChild(el); el.select();
             document.execCommand('copy');
             document.body.removeChild(el);
-            alert("Kopiert!");
+            alert("Daten kopiert!");
         }
 
         const pad = document.getElementById('numpad');

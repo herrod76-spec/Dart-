@@ -24,7 +24,6 @@
             touch-action: manipulation;
             padding-top: env(safe-area-inset-top);
         }
-        /* Mobile Optimierung für iPad Pro */
         .key-btn {
             aspect-ratio: 1 / 1;
             display: flex;
@@ -41,8 +40,6 @@
         .player-card { transition: all 0.3s ease; border-width: 4px; }
         .player-active { border-color: var(--awo-red) !important; background-color: #1e293b !important; opacity: 1 !important; transform: scale(1.02); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        
-        /* Checkbox Fix für iOS */
         select { -webkit-appearance: none; appearance: none; }
     </style>
 </head>
@@ -52,7 +49,6 @@
         <!-- Header -->
         <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
             <div class="flex items-center gap-3">
-                <!-- Fallback Icon falls image.png nicht lädt -->
                 <div class="w-10 h-10 rounded-lg bg-red-600 flex items-center justify-center shadow-lg overflow-hidden">
                     <img src="image.png" alt="AWO" onerror="this.style.display='none'" class="w-full h-full object-cover">
                     <span class="text-white font-black text-xs">AWO</span>
@@ -66,8 +62,8 @@
             <!-- Setup -->
             <div class="flex gap-2 bg-slate-800 p-1 rounded-xl overflow-x-auto no-scrollbar">
                 <select id="player-count" onchange="setupPlayers()" class="bg-slate-700 text-white text-xs font-bold px-3 py-1 rounded-lg outline-none">
-                    <option value="1">1 Spieler</option>
-                    <option value="2" selected>2 Spieler</option>
+                    <option value="1" selected>1 Spieler</option>
+                    <option value="2">2 Spieler</option>
                     <option value="3">3 Spieler</option>
                     <option value="4">4 Spieler</option>
                     <option value="5">5 Spieler</option>
@@ -84,7 +80,6 @@
         <div id="player-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6"></div>
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <!-- Left Side: Input -->
             <div class="lg:col-span-3 space-y-4">
                 <div class="flex items-center justify-between bg-slate-800/50 p-4 rounded-2xl border border-slate-700">
                     <div class="flex gap-3" id="turn-darts">
@@ -114,14 +109,13 @@
                 </div>
             </div>
 
-            <!-- Right Side: Utils -->
             <div class="space-y-4">
                 <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700">
-                    <h3 class="text-xs font-black mb-4 text-slate-400 uppercase tracking-widest">Leg-Siege</h3>
+                    <h3 class="text-xs font-black mb-4 text-slate-400 uppercase tracking-widest">Statistik</h3>
                     <div id="legs-stats" class="space-y-2"></div>
                 </div>
                 <button onclick="copyToNumbers()" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 rounded-2xl text-xs font-bold transition-colors">
-                    Statistik für Numbers kopieren
+                    Statistik kopieren
                 </button>
             </div>
         </div>
@@ -140,13 +134,13 @@
 
         function setupPlayers(keepLegs = false) {
             const count = parseInt(document.getElementById('player-count').value);
-            const oldLegs = gameState.players.map(p => p.legs);
+            const oldLegs = gameState.players.map(p => p.legs || 0);
             
             gameState.players = Array.from({length: count}, (_, i) => ({
                 id: i + 1,
                 score: getInitialScore(),
                 throws: [],
-                legs: (keepLegs && oldLegs[i]) ? oldLegs[i] : 0
+                legs: (keepLegs && i < oldLegs.length) ? oldLegs[i] : 0
             }));
             
             gameState.activeIdx = 0;
@@ -213,7 +207,7 @@
                     p.score -= points;
                     if (p.score === 0) {
                         p.legs++;
-                        alert(`Spieler ${p.id} gewinnt das Leg!`);
+                        alert(`Spieler ${p.id} gewinnt!`);
                         setupPlayers(true); 
                         return;
                     }
@@ -263,7 +257,7 @@
                 document.getElementById(`p-score-${i}`).innerText = p.score;
                 document.getElementById(`p-darts-${i}`).innerText = p.throws.length;
                 
-                const avg = p.throws.length ? ((gameState.mode.includes('01') ? (getInitialScore() - p.score) : p.score) / (p.throws.length / 3)).toFixed(1) : "0.0";
+                const avg = p.throws.length ? ((Math.abs(getInitialScore() - p.score)) / (p.throws.length / 3)).toFixed(1) : "0.0";
                 document.getElementById(`p-avg-${i}`).innerText = avg;
             });
 
@@ -283,7 +277,7 @@
 
         function setMultiplier(m) { gameState.multiplier = m; updateUI(); }
         function undo() { if (gameState.history.length) { gameState = gameState.history.pop(); updateUI(); } }
-        function resetGame() { if(confirm("Spiel komplett zurücksetzen (inkl. Legs)?")) setupPlayers(false); }
+        function resetGame() { if(confirm("Spiel komplett zurücksetzen?")) setupPlayers(false); }
 
         function copyToNumbers() {
             let csv = "Spieler;Score;Legs;Avg\n";

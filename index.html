@@ -3,361 +3,297 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>DART PRO - AWO KV WESEL</title>
+    <link rel="apple-touch-icon" href="image.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>DART PRO AI - AWO KV Wesel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        :root { --accent: #ef4444; --bg: #0f172a; }
-        body { 
-            background-color: var(--bg); 
-            color: #f8fafc; 
-            font-family: 'Inter', sans-serif; 
-            touch-action: manipulation; 
-            overflow: hidden;
-            height: 100vh;
-        }
-
-        .view-ipad { display: flex; flex-direction: row; }
-        .view-iphone { display: flex; flex-direction: column; }
-
-        .sidebar { 
-            width: 280px; 
-            height: 100vh; 
-            background: #020617; 
-            border-right: 1px solid #1e293b; 
-        }
-
-        .main-content { flex: 1; overflow-y: auto; height: 100vh; position: relative; }
-        .iphone-mode .main-content { padding-bottom: 90px; }
-
-        .mobile-nav {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            height: 85px;
-            background: #020617;
-            border-top: 1px solid #1e293b;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 50;
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-
-        .setup-card { background: #1e293b; border: 2px solid #334155; transition: all 0.2s; cursor: pointer; position: relative; }
-        .setup-card.selected { border-color: var(--accent); background: #2d3748; transform: scale(1.02); }
+        :root { --accent: #ef4444; --bg: #020617; }
+        body { background-color: var(--bg); color: #f8fafc; font-family: 'Inter', sans-serif; touch-action: manipulation; overflow: hidden; height: 100vh; }
         
-        .info-btn { 
-            position: absolute; top: 4px; right: 4px; 
-            width: 20px; height: 20px; background: rgba(255,255,255,0.1); 
-            border-radius: 50%; font-size: 10px; display: flex; 
-            align-items: center; justify-content: center; color: #94a3b8;
-        }
-
-        .key-btn { 
-            aspect-ratio: 1/1; display: flex; align-items: center; 
-            justify-content: center; font-weight: 900; border-radius: 12px; 
-            background: #1e293b; border: 1px solid #334155; font-size: 1.2rem; cursor: pointer;
-        }
+        .view-ipad { flex-direction: row; }
+        .view-iphone { flex-direction: column; }
+        
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); }
+        .setup-card { background: #1e293b; border: 2px solid #334155; transition: 0.2s; cursor: pointer; }
+        .setup-card.selected { border-color: var(--accent); background: #2d3748; box-shadow: 0 0 20px rgba(239, 68, 68, 0.2); }
+        
+        .key-btn { aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; font-weight: 900; border-radius: 12px; background: #1e293b; border: 1px solid #334155; cursor: pointer; }
         .active-mod { background: var(--accent) !important; color: white; border-color: white !important; }
         
-        .player-card { background: #1e293b; padding: 12px; border-radius: 16px; border: 2px solid transparent; transition: 0.3s; }
-        .player-card.active { border-color: var(--accent); box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); }
+        .player-card { background: #0f172a; padding: 12px; border-radius: 16px; border: 2px solid transparent; transition: 0.3s; }
+        .player-card.active { border-color: var(--accent); background: #1e293b; transform: scale(1.05); }
 
-        #launcher {
-            position: fixed; inset: 0; background: #0f172a; z-index: 1000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
+        #launcher { position: fixed; inset: 0; background: #020617; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        
+        select { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em; }
+        
+        .ai-glow { animation: ai-glow 3s infinite alternate; }
+        @keyframes ai-glow { from { box-shadow: 0 0 5px rgba(239, 68, 68, 0.2); } to { box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); } }
     </style>
 </head>
-<body class="view-ipad" id="app-body">
+<body class="flex" id="app-body">
 
-    <!-- LAUNCHER SCREEN -->
+    <!-- DEVICE SELECTOR (LAUNCHER) -->
     <div id="launcher">
-        <h1 class="text-5xl font-black italic mb-2 tracking-tighter">DART<span class="text-red-500">PRO</span></h1>
-        <p class="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mb-16 text-center">AWO KV WESEL • Pädagogik & Coaching</p>
+        <div class="text-center mb-12">
+            <h1 class="text-6xl font-black italic tracking-tighter">DART<span class="text-red-500">PRO</span> AI</h1>
+            <p class="text-slate-500 text-xs font-bold uppercase tracking-[0.3em]">AWO KV Wesel • Pädagogik Edition</p>
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl px-6">
-            <button onclick="launch('ipad')" class="p-8 bg-slate-800/50 rounded-[2.5rem] border-2 border-slate-700 hover:border-red-500 transition-all text-left group">
+            <button onclick="boot('ipad')" class="p-10 glass rounded-[3rem] border-2 border-slate-700 hover:border-red-500 transition-all text-left group">
                 <span class="text-4xl block mb-4 group-hover:scale-110 transition-transform">💻</span>
-                <span class="text-xl font-black block text-white">iPad Pro M5</span>
-                <span class="text-slate-400 text-sm">Präzisions-Layout</span>
+                <span class="text-2xl font-black block text-white">iPad Pro / Tablet</span>
+                <span class="text-slate-400 text-sm">Vollständiges Dashboard-Layout</span>
             </button>
-            <button onclick="launch('iphone')" class="p-8 bg-slate-800/50 rounded-[2.5rem] border-2 border-slate-700 hover:border-red-500 transition-all text-left group">
+            <button onclick="boot('iphone')" class="p-10 glass rounded-[3rem] border-2 border-slate-700 hover:border-red-500 transition-all text-left group">
                 <span class="text-4xl block mb-4 group-hover:scale-110 transition-transform">📱</span>
-                <span class="text-xl font-black block text-white">iPhone 15 Pro</span>
-                <span class="text-slate-400 text-sm">Mobile Scorer</span>
+                <span class="text-2xl font-black block text-white">iPhone / Handy</span>
+                <span class="text-slate-400 text-sm">Optimierter mobiler Scorer</span>
             </button>
         </div>
     </div>
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar hidden lg:flex flex-col" id="desktop-sidebar">
-        <div class="p-8">
-            <h2 class="text-xl font-black italic">DART<span class="text-red-500">PRO</span></h2>
-            <p class="text-[8px] text-slate-500 font-bold uppercase tracking-widest">Dashboard</p>
+    <!-- AI HEADER -->
+    <div id="ai-top-bar" class="hidden fixed top-0 left-0 right-0 z-[100] glass px-6 py-2 flex justify-between items-center border-b border-red-500/20">
+        <div class="flex items-center gap-3">
+            <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+            <span id="ai-status-text" class="text-[10px] font-black uppercase text-red-500 tracking-widest">AI Mentor aktiv</span>
         </div>
-        <nav class="flex-1 px-4 space-y-2">
-            <button onclick="switchPage('setup')" class="w-full text-left p-4 hover:bg-slate-800 rounded-2xl font-bold transition-all flex items-center gap-3"><span>🏠</span> Home</button>
-            <button onclick="openAnalysis()" class="w-full text-left p-4 hover:bg-slate-800 rounded-2xl font-bold text-yellow-500 transition-all flex items-center gap-3"><span>📊</span> Analyse</button>
-        </nav>
-        <div class="p-6 bg-slate-900 m-4 rounded-2xl border border-slate-800 text-center">
-            <div id="timer-display" class="text-2xl font-black tabular-nums">00:00</div>
-            <div class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1">Trainingszeit</div>
+        <div class="flex gap-2">
+            <button onclick="openAIReport()" class="bg-red-600 text-white text-[9px] font-black px-3 py-1.5 rounded-full uppercase">Bericht</button>
+            <button onclick="location.reload()" class="bg-slate-700 text-white text-[9px] font-black px-3 py-1.5 rounded-full uppercase">Reset</button>
         </div>
-    </aside>
+    </div>
 
-    <main class="main-content">
-        <!-- SETUP PAGE -->
-        <section id="page-setup" class="p-6 lg:p-16">
-            <header class="mb-12">
-                <h2 class="text-5xl lg:text-7xl font-black italic uppercase italic tracking-tighter">New <span class="text-red-500">Session</span></h2>
-                <p class="text-slate-500 font-bold text-sm mt-2">Wähle Spielmodus und Spieler für die AWO Gruppe</p>
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 overflow-y-auto h-screen relative pt-14">
+        
+        <!-- PAGE 1: SETUP -->
+        <section id="page-setup" class="p-6 lg:p-20 max-w-4xl mx-auto space-y-10">
+            <header>
+                <h2 class="text-5xl font-black italic uppercase tracking-tighter">New <span class="text-red-500">Session</span></h2>
+                <p class="text-slate-400 text-sm font-bold uppercase mt-2">Pädagogisches Setting konfigurieren</p>
             </header>
 
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-10">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Players -->
                 <div class="space-y-4">
-                    <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2">1. Teilnehmer</h3>
-                    <div class="grid grid-cols-3 gap-3">
-                        <button onclick="setPlayerCount(1)" id="pc-1" class="setup-card p-6 rounded-[1.5rem] font-black text-xl selected">1</button>
-                        <button onclick="setPlayerCount(2)" id="pc-2" class="setup-card p-6 rounded-[1.5rem] font-black text-xl">2</button>
-                        <button onclick="setPlayerCount(3)" id="pc-3" class="setup-card p-6 rounded-[1.5rem] font-black text-xl">3</button>
-                        <button onclick="setPlayerCount(4)" id="pc-4" class="setup-card p-6 rounded-[1.5rem] font-black text-xl">4</button>
-                        <button onclick="setPlayerCount(5)" id="pc-5" class="setup-card p-6 rounded-[1.5rem] font-black text-xl">5</button>
-                        <button onclick="setPlayerCount(6)" id="pc-6" class="setup-card p-6 rounded-[1.5rem] font-black text-xl">6</button>
+                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Teilnehmeranzahl</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="setPlayerCount(1)" id="pc-1" class="setup-card p-4 rounded-xl font-black selected">1</button>
+                        <button onclick="setPlayerCount(2)" id="pc-2" class="setup-card p-4 rounded-xl font-black">2</button>
+                        <button onclick="setPlayerCount(3)" id="pc-3" class="setup-card p-4 rounded-xl font-black">3</button>
+                        <button onclick="setPlayerCount(4)" id="pc-4" class="setup-card p-4 rounded-xl font-black">4</button>
                     </div>
                 </div>
 
+                <!-- Mode Dropdown -->
                 <div class="space-y-4">
-                    <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2">2. Spielmodus</h3>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button onclick="setMode('501')" id="m-501" class="setup-card p-4 rounded-2xl font-bold text-sm selected">🏆 501 / 301 <div class="info-btn" onclick="showRules('501', event)">?</div></button>
-                        <button onclick="setMode('highscore')" id="m-highscore" class="setup-card p-4 rounded-2xl font-bold text-sm">📈 High Score <div class="info-btn" onclick="showRules('highscore', event)">?</div></button>
-                        <button onclick="setMode('elimination')" id="m-elimination" class="setup-card p-4 rounded-2xl font-bold text-sm">🚫 Elimination <div class="info-btn" onclick="showRules('elimination', event)">?</div></button>
-                        <button onclick="setMode('bobs27')" id="m-bobs27" class="setup-card p-4 rounded-2xl font-bold text-sm">📉 Bob's 27 <div class="info-btn" onclick="showRules('bobs27', event)">?</div></button>
-                        <button onclick="setMode('atc')" id="m-atc" class="setup-card p-4 rounded-2xl font-bold text-sm">⏱️ Around Clock <div class="info-btn" onclick="showRules('atc', event)">?</div></button>
-                        <button onclick="setMode('killer')" id="m-killer" class="setup-card p-4 rounded-2xl font-bold text-sm">🗡️ Killer <div class="info-btn" onclick="showRules('killer', event)">?</div></button>
+                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Spielmodus</label>
+                    <select id="mode-select" class="w-full p-4 glass rounded-xl font-bold text-white outline-none">
+                        <optgroup label="Klassisch">
+                            <option value="501">🏆 501 (Double Out)</option>
+                            <option value="301">🏆 301 (Single Out)</option>
+                            <option value="highscore">📈 Highscore (30 Darts)</option>
+                        </optgroup>
+                        <optgroup label="Pädagogisch / Training">
+                            <option value="atc">⏱️ Around The Clock (Grob-Motorik)</option>
+                            <option value="killer">🗡️ Killer (Frustrationstoleranz)</option>
+                            <option value="elimination">🚫 Elimination (Taktik/Druck)</option>
+                            <option value="bobs27">📉 Bob's 27 (Fokus Double)</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <!-- AI Focus Selector -->
+                <div class="space-y-4 md:col-span-2">
+                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest text-center block">KI Beobachtungs-Fokus</label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <button onclick="setAIFocus('impulskontrolle')" id="ai-f-1" class="setup-card p-4 rounded-xl font-bold text-sm selected">Impulskontrolle</button>
+                        <button onclick="setAIFocus('frustration')" id="ai-f-2" class="setup-card p-4 rounded-xl font-bold text-sm">Frustrationstoleranz</button>
+                        <button onclick="setAIFocus('motorik')" id="ai-f-3" class="setup-card p-4 rounded-xl font-bold text-sm">Motorik & Fokus</button>
                     </div>
                 </div>
             </div>
 
-            <button onclick="initGame()" class="w-full mt-12 py-8 bg-white text-black font-black rounded-[2.5rem] uppercase tracking-[0.3em] text-2xl hover:bg-red-500 hover:text-white transition-all shadow-2xl">Session Starten</button>
+            <button onclick="startGame()" class="w-full py-6 bg-white text-black font-black rounded-2xl uppercase tracking-widest text-xl hover:bg-red-500 hover:text-white transition-all">Einheit Starten</button>
         </section>
 
-        <!-- GAME PAGE -->
-        <section id="page-game" class="hidden p-4 lg:p-12">
-            <div id="player-status-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8"></div>
+        <!-- PAGE 2: GAME -->
+        <section id="page-game" class="hidden p-4 lg:p-10 space-y-6">
+            <div id="player-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-3"></div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-2">
-                    <div class="bg-slate-900 border border-slate-700 p-8 rounded-[3rem] flex justify-between items-center mb-8">
-                        <div class="flex gap-2 lg:gap-4" id="dart-previews">
-                            <div class="w-14 h-14 lg:w-20 lg:h-20 bg-slate-950 rounded-2xl flex items-center justify-center font-black text-3xl">-</div>
-                            <div class="w-14 h-14 lg:w-20 lg:h-20 bg-slate-950 rounded-2xl flex items-center justify-center font-black text-3xl">-</div>
-                            <div class="w-14 h-14 lg:w-20 lg:h-20 bg-slate-950 rounded-2xl flex items-center justify-center font-black text-3xl">-</div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Scorer -->
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="glass p-6 rounded-[2rem] flex justify-between items-center relative overflow-hidden ai-glow">
+                        <div id="checkout-help" class="absolute top-2 left-6 text-[9px] font-black text-red-500 uppercase"></div>
+                        <div class="flex gap-2" id="dart-previews">
+                            <div class="w-12 h-12 lg:w-16 lg:h-16 glass rounded-xl flex items-center justify-center font-black text-2xl">-</div>
+                            <div class="w-12 h-12 lg:w-16 lg:h-16 glass rounded-xl flex items-center justify-center font-black text-2xl">-</div>
+                            <div class="w-12 h-12 lg:w-16 lg:h-16 glass rounded-xl flex items-center justify-center font-black text-2xl">-</div>
                         </div>
                         <div class="text-right">
-                            <p class="text-[10px] font-black text-slate-500 uppercase">Aktueller Wurf</p>
-                            <h3 id="turn-total" class="text-7xl lg:text-8xl font-black italic tabular-nums leading-none">0</h3>
+                            <h3 id="turn-score" class="text-6xl lg:text-7xl font-black italic tabular-nums">0</h3>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-3 gap-3 mb-6">
-                        <button onclick="setMult(1)" id="mod-1" class="py-5 bg-slate-800 rounded-2xl font-black active-mod">SINGLE</button>
-                        <button onclick="setMult(2)" id="mod-2" class="py-5 bg-slate-800 rounded-2xl font-black">DOUBLE</button>
-                        <button onclick="setMult(3)" id="mod-3" class="py-5 bg-slate-800 rounded-2xl font-black">TRIPLE</button>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="setMult(1)" id="mod-1" class="py-3 glass rounded-xl font-black active-mod">SINGLE</button>
+                        <button onclick="setMult(2)" id="mod-2" class="py-3 glass rounded-xl font-black">DOUBLE</button>
+                        <button onclick="setMult(3)" id="mod-3" class="py-3 glass rounded-xl font-black">TRIPLE</button>
                     </div>
-                    <div id="dart-numpad" class="grid grid-cols-5 md:grid-cols-7 gap-2 mb-6"></div>
-                    <div class="grid grid-cols-3 gap-3">
-                        <button onclick="registerHit(0)" class="bg-slate-700 py-6 rounded-2xl font-black uppercase text-xl">Miss</button>
-                        <button onclick="registerHit(25)" class="bg-orange-600 py-6 rounded-2xl font-black uppercase text-xl">Bull</button>
-                        <button onclick="undoLast()" class="bg-slate-800/50 py-6 rounded-2xl font-bold text-slate-400 border border-slate-700">Undo</button>
+
+                    <div id="numpad" class="grid grid-cols-5 md:grid-cols-7 gap-1.5"></div>
+
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="hit(0)" class="bg-slate-800 py-5 rounded-xl font-black text-sm uppercase">Miss</button>
+                        <button onclick="hit(25)" class="bg-red-700 py-5 rounded-xl font-black text-sm uppercase">Bull</button>
+                        <button onclick="undo()" class="bg-slate-900 border border-slate-700 py-5 rounded-xl font-bold text-xs text-slate-500">Undo</button>
                     </div>
                 </div>
 
-                <div class="space-y-6">
-                    <div class="bg-slate-900/80 p-8 rounded-[2.5rem] border border-slate-800 text-center">
-                        <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Modus</p>
-                        <div id="mode-label" class="text-3xl font-black text-red-500 uppercase italic">-</div>
+                <!-- Info Column -->
+                <div class="space-y-4">
+                    <div class="glass p-6 rounded-2xl text-center">
+                        <div id="timer-label" class="text-[9px] font-black text-slate-500 uppercase mb-1">Session Timer</div>
+                        <div id="session-timer" class="text-3xl font-black text-red-500 tabular-nums">45:00</div>
                     </div>
-                    <div class="bg-slate-800/20 p-6 rounded-[2.5rem] border border-slate-700 h-72">
-                        <canvas id="liveChart"></canvas>
+                    <div class="glass p-4 rounded-2xl h-48 lg:h-64">
+                        <canvas id="game-chart"></canvas>
+                    </div>
+                    <div class="bg-red-900/10 border border-red-500/20 p-4 rounded-2xl">
+                        <p class="text-[9px] font-black text-red-500 uppercase mb-2">KI Fokus-Check</p>
+                        <p id="ai-live-note" class="text-xs text-slate-300 italic">Beobachte Wurfrhythmus...</p>
                     </div>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- MOBILE NAVIGATION -->
-    <nav class="mobile-nav hidden" id="iphone-nav">
-        <button onclick="switchPage('setup')" class="flex flex-col items-center gap-1 text-[9px] font-bold text-slate-500"><span>🏠</span>Setup</button>
-        <button onclick="switchPage('game')" class="flex flex-col items-center gap-1 text-[9px] font-bold text-slate-500"><span>🎯</span>Scorer</button>
-        <button onclick="openAnalysis()" class="flex flex-col items-center gap-1 text-[9px] font-bold text-yellow-600"><span>📊</span>Analyse</button>
-    </nav>
-
-    <!-- RULE OVERLAY -->
-    <div id="rule-overlay" class="fixed inset-0 bg-black/80 hidden z-[3000] flex items-center justify-center p-6 backdrop-blur-sm">
-        <div class="bg-slate-900 border-2 border-slate-700 w-full max-w-lg rounded-[2rem] p-8 shadow-2xl">
-            <h3 id="rule-title" class="text-3xl font-black text-red-500 uppercase italic mb-4">Regeln</h3>
-            <p id="rule-text" class="text-slate-300 leading-relaxed mb-8"></p>
-            <button onclick="closeRules()" class="w-full py-4 bg-white text-black font-black rounded-xl uppercase">Verstanden</button>
-        </div>
-    </div>
-
-    <!-- ANALYSIS MODAL -->
-    <div id="analysis-modal" class="fixed inset-0 bg-black/95 hidden z-[2000] flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-700 w-full max-w-6xl max-h-[90vh] rounded-[3rem] p-8 lg:p-12 overflow-y-auto relative">
-            <button onclick="closeAnalysis()" class="absolute top-8 right-8 text-slate-500 text-4xl hover:text-white">&times;</button>
-            <h2 class="text-4xl lg:text-6xl font-black italic uppercase text-white mb-10">Analyse <span class="text-red-500">Center</span></h2>
-            <div id="ana-stats" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10"></div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="bg-slate-800/30 p-8 rounded-[2.5rem] border border-slate-700">
-                    <h4 class="text-xs font-black text-slate-500 uppercase mb-6 tracking-widest text-center">Heatmap</h4>
-                    <div id="heatmap-grid" class="grid grid-cols-7 gap-2"></div>
-                </div>
-                <div class="bg-slate-800/30 p-8 rounded-[2.5rem] border border-slate-700 h-[300px]">
-                    <canvas id="progChart"></canvas>
-                </div>
+    <!-- REPORT MODAL -->
+    <div id="report-modal" class="fixed inset-0 bg-black/95 hidden z-[3000] flex items-center justify-center p-4 lg:p-12">
+        <div class="bg-slate-900 w-full max-w-2xl rounded-[2.5rem] p-8 border border-slate-800 overflow-y-auto max-h-[90vh]">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-black italic tracking-tighter uppercase">KI <span class="text-red-500">Analyse</span></h2>
+                <button onclick="closeReport()" class="text-slate-500 text-3xl">&times;</button>
+            </div>
+            <div id="report-content" class="text-slate-300 space-y-4 text-sm leading-relaxed">
+                <div class="flex items-center gap-3"><div class="animate-spin w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full"></div> Berichtsdaten werden zusammengestellt...</div>
+            </div>
+            <div class="mt-8 grid grid-cols-2 gap-4">
+                <button onclick="window.print()" class="py-4 glass rounded-xl font-black uppercase text-xs">PDF Speichern</button>
+                <button onclick="closeReport()" class="py-4 bg-red-600 rounded-xl font-black uppercase text-xs">Zurück</button>
             </div>
         </div>
     </div>
 
     <script>
-        const RULE_BOOKS = {
-            '501': { title: "501 Double Out", text: "Klassisches Wettkampfspiel. Jeder startet bei 501. Das Ziel ist exakt 0. Der letzte Wurf muss ein 'Double' sein. Ein pädagogischer Fokus liegt hier auf Kopfrechnen und Frustrationstoleranz." },
-            'highscore': { title: "High Score", text: "In 7 Runden (21 Darts) so viele Punkte wie möglich sammeln. Ideal für Anfänger, um ein Gefühl für Treffsicherheit zu bekommen." },
-            'elimination': { title: "Elimination", text: "Wer genau die Punktzahl eines Gegners erreicht, wirft diesen auf 0 zurück. Fördert strategisches Denken und Aufmerksamkeit für die Mitspieler." },
-            'bobs27': { title: "Bob's 27", text: "Trainingstool für Doppel-Felder. Start bei 27 Punkten. Triffst du das aktuelle Doppel (1, 2, 3...), werden die Punkte addiert, sonst abgezogen. Bei 0 ist das Spiel vorbei." },
-            'atc': { title: "Around the Clock", text: "Triff nacheinander die Zahlen 1 bis 20 und am Ende das Bullseye. Perfekt zur Übung des gesamten Boards." },
-            'killer': { title: "Killer", text: "Triff zuerst dein eigenes Doppel, um 'Killer' zu werden. Danach jagst du die Leben der anderen Spieler, indem du deren Doppel triffst." }
-        };
+        const apiKey = ""; 
+        let config = { device: 'ipad', playerCount: 1, mode: '501', aiFocus: 'impulskontrolle' };
+        let game = { players: [], activeIdx: 0, mult: 1, turn: [], timer: 45 * 60, interval: null, history: [] };
+        let chart;
 
-        let state = {
-            players: [], activeIdx: 0, playerCount: 1, mode: '501', multiplier: 1, turnDarts: [],
-            heatmap: {}, history: {s:0, d:0, t:0, m:0}, view: 'ipad', 
-            timerSeconds: 0, timerActive: false, timerInterval: null
-        };
-        let lChart, pChart;
-
-        function launch(device) {
-            state.view = device;
+        function boot(device) {
+            config.device = device;
             document.getElementById('launcher').style.display = 'none';
-            if(device === 'iphone') {
-                document.getElementById('app-body').className = 'view-iphone iphone-mode';
-                document.getElementById('iphone-nav').classList.remove('hidden');
-                document.getElementById('desktop-sidebar').classList.add('hidden');
-            } else {
-                document.getElementById('app-body').className = 'view-ipad';
-                document.getElementById('desktop-sidebar').classList.remove('hidden');
-            }
+            document.getElementById('app-body').className = 'flex ' + (device === 'iphone' ? 'view-iphone' : 'view-ipad');
             initNumpad();
-            initCharts();
-        }
-
-        function showRules(key, e) {
-            e.stopPropagation();
-            const rule = RULE_BOOKS[key];
-            document.getElementById('rule-title').innerText = rule.title;
-            document.getElementById('rule-text').innerText = rule.text;
-            document.getElementById('rule-overlay').classList.remove('hidden');
-        }
-
-        function closeRules() { document.getElementById('rule-overlay').classList.add('hidden'); }
-
-        function startTimer() {
-            if (state.timerActive) return;
-            state.timerActive = true;
-            state.timerInterval = setInterval(() => {
-                state.timerSeconds++;
-                const m = Math.floor(state.timerSeconds / 60);
-                const s = state.timerSeconds % 60;
-                document.getElementById('timer-display').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-            }, 1000);
+            initChart();
         }
 
         function setPlayerCount(n) {
-            state.playerCount = n;
+            config.playerCount = n;
             document.querySelectorAll('[id^="pc-"]').forEach(b => b.classList.remove('selected'));
-            document.getElementById(`pc-${n}`).classList.add('selected');
+            document.getElementById('pc-'+n).classList.add('selected');
         }
 
-        function setMode(m) {
-            state.mode = m;
-            document.querySelectorAll('[id^="m-"]').forEach(b => b.classList.remove('selected'));
-            document.getElementById(`m-${m}`).classList.add('selected');
+        function setAIFocus(f) {
+            config.aiFocus = f;
+            document.querySelectorAll('[id^="ai-f-"]').forEach(b => b.classList.remove('selected'));
+            if(f === 'impulskontrolle') document.getElementById('ai-f-1').classList.add('selected');
+            if(f === 'frustration') document.getElementById('ai-f-2').classList.add('selected');
+            if(f === 'motorik') document.getElementById('ai-f-3').classList.add('selected');
         }
 
-        function initGame() {
-            state.players = Array.from({length: state.playerCount}, (_,i) => ({
-                name: `Spieler ${i+1}`, 
-                score: (state.mode==='501'?501:(state.mode==='bobs27'?27:0)), 
+        function startGame() {
+            config.mode = document.getElementById('mode-select').value;
+            game.players = Array.from({length: config.playerCount}, (_, i) => ({
+                name: 'Tln ' + (i+1), 
+                score: (config.mode.startsWith('501') ? 501 : (config.mode === '301' ? 301 : 0)),
                 darts: 0, total: 0, path: []
             }));
-            state.activeIdx = 0; state.turnDarts = []; state.heatmap = {};
-            state.history = {s:0, d:0, t:0, m:0};
-            state.timerSeconds = 0;
-            state.timerActive = false;
-            if(state.timerInterval) clearInterval(state.timerInterval);
-            document.getElementById('timer-display').innerText = "00:00";
+            game.activeIdx = 0; game.timer = 45 * 60; game.history = [];
             
-            document.getElementById('mode-label').innerText = state.mode;
+            document.getElementById('page-setup').classList.add('hidden');
+            document.getElementById('page-game').classList.remove('hidden');
+            document.getElementById('ai-top-bar').classList.remove('hidden');
+            
             renderPlayers();
-            switchPage('game');
-            updateUI();
+            startTimer();
         }
 
-        function registerHit(val) {
-            // Timer startet beim ERSTEN Eintrag
-            if (!state.timerActive) startTimer();
+        function startTimer() {
+            if(game.interval) clearInterval(game.interval);
+            game.interval = setInterval(() => {
+                game.timer--;
+                const m = Math.floor(game.timer/60);
+                const s = game.timer%60;
+                document.getElementById('session-timer').innerText = `${m}:${s.toString().padStart(2,'0')}`;
+                if(game.timer % 300 === 0) updateAILiveNote();
+                if(game.timer <= 0) { clearInterval(game.interval); alert("Einheit beendet!"); }
+            }, 1000);
+        }
 
-            const m = state.multiplier;
-            const pts = val * m;
-            const p = state.players[state.activeIdx];
+        function updateAILiveNote() {
+            const notes = {
+                impulskontrolle: ["Wurfpause einlegen?", "Ruhiges Atmen forcieren.", "Nächster Wurf: Fokus-Check."],
+                frustration: ["Positive Bestärkung nötig?", "Kleine Ziele setzen.", "Erfolgserlebnis suchen."],
+                motorik: ["Standposition prüfen.", "Wurfarm-Stabilität?", "Gleichmäßiger Rhythmus."]
+            };
+            const f = notes[config.aiFocus];
+            document.getElementById('ai-live-note').innerText = f[Math.floor(Math.random()*f.length)];
+        }
 
-            state.heatmap[val] = (state.heatmap[val] || 0) + 1;
-            if(val === 0) state.history.m++; 
-            else if(m===1) state.history.s++; 
-            else if(m===2) state.history.d++; 
-            else state.history.t++;
-
-            // Einfache Score-Logik
-            if(state.mode === '501') {
+        function hit(val) {
+            const pts = val * game.mult;
+            const p = game.players[game.activeIdx];
+            
+            if(config.mode.includes('501') || config.mode === '301') {
                 if(p.score - pts >= 2 || p.score - pts === 0) p.score -= pts;
+                if(p.score === 0) { confetti(); alert(p.name + " hat gewonnen!"); }
             } else {
                 p.score += pts;
             }
 
             p.darts++; p.total += pts; p.path.push(p.score);
-            state.turnDarts.push(pts);
+            game.turn.push(pts);
+            game.history.push({pIdx: game.activeIdx, val: pts});
 
-            if(state.turnDarts.length === 3 || (state.mode === '501' && p.score === 0)) {
-                if(p.score === 0 && state.mode === '501') { 
-                    clearInterval(state.timerInterval);
-                    alert("Sieg! " + p.name + " hat ausgecheckt."); 
-                    switchPage('setup'); 
-                    return; 
-                }
-                state.turnDarts = [];
-                state.activeIdx = (state.activeIdx + 1) % state.playerCount;
+            if(game.turn.length === 3) {
+                game.turn = [];
+                game.activeIdx = (game.activeIdx + 1) % config.playerCount;
             }
 
-            setMult(1); renderPlayers(); updateUI(); updateLiveChart();
+            game.mult = 1;
+            updateUI();
         }
 
         function setMult(m) {
-            state.multiplier = m;
+            game.mult = m;
             document.querySelectorAll('[id^="mod-"]').forEach(b => b.classList.remove('active-mod'));
-            document.getElementById(`mod-${m}`).classList.add('active-mod');
-        }
-
-        function switchPage(p) {
-            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            document.getElementById(`page-${p}`).classList.remove('hidden');
+            document.getElementById('mod-'+m).classList.add('active-mod');
         }
 
         function renderPlayers() {
-            document.getElementById('player-status-grid').innerHTML = state.players.map((p, i) => `
-                <div class="player-card ${i===state.activeIdx?'active':''}">
-                    <div class="flex justify-between text-[9px] font-black uppercase text-slate-500 mb-1">
-                        <span>${p.name}</span><span>AVG: ${(p.darts?(p.total/(p.darts/3)):0).toFixed(1)}</span>
+            document.getElementById('player-grid').innerHTML = game.players.map((p, i) => `
+                <div class="player-card ${i===game.activeIdx?'active':''}">
+                    <div class="flex justify-between text-[8px] font-black text-slate-500 uppercase mb-1">
+                        <span>${p.name}</span><span>${p.darts}D</span>
                     </div>
                     <div class="text-3xl font-black text-white">${p.score}</div>
                 </div>
@@ -365,75 +301,86 @@
         }
 
         function updateUI() {
+            renderPlayers();
             const divs = document.getElementById('dart-previews').children;
             for(let i=0; i<3; i++) {
-                const v = state.turnDarts[i];
+                const v = game.turn[i];
                 divs[i].innerText = v !== undefined ? v : "-";
-                divs[i].className = `w-14 h-14 lg:w-20 lg:h-20 rounded-2xl flex items-center justify-center font-black text-xl lg:text-3xl ${v!==undefined?'bg-red-600 text-white':'bg-slate-950 text-slate-800'}`;
+                divs[i].className = `w-12 h-12 lg:w-16 lg:h-16 rounded-xl flex items-center justify-center font-black text-2xl ${v!==undefined?'bg-red-600 text-white':'glass text-slate-700'}`;
             }
-            document.getElementById('turn-total').innerText = state.turnDarts.reduce((a,b)=>a+b, 0);
+            document.getElementById('turn-score').innerText = game.turn.reduce((a,b)=>a+b, 0);
+            updateChart();
+            
+            // Checkout Helper
+            const cp = game.players[game.activeIdx];
+            const help = document.getElementById('checkout-help');
+            if(config.mode.includes('501') && cp.score <= 170) {
+                help.innerText = cp.score <= 40 && cp.score % 2 === 0 ? `Target: D${cp.score/2}` : "Finish möglich";
+            } else help.innerText = "";
+        }
+
+        async function openAIReport() {
+            document.getElementById('report-modal').classList.remove('hidden');
+            const content = document.getElementById('report-content');
+            
+            const prompt = `Analysiere als Dipl. Sozialpädagoge für die AWO KV Wesel diese Dart-Einheit. 
+                Modus: ${config.mode}, Fokus: ${config.aiFocus}.
+                Daten: ${JSON.stringify(game.players)}.
+                Erstelle einen Bericht mit: 
+                1. Beobachtungen zur ${config.aiFocus}.
+                2. Soziale Interaktion & Frustlevel.
+                3. Empfehlung für die Dokumentation. 
+                Kurz und prägnant halten.`;
+
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                const data = await res.json();
+                content.innerHTML = `<div class="prose prose-invert prose-sm">${data.candidates[0].content.parts[0].text.replace(/\n/g, '<br>')}</div>`;
+            } catch (e) { content.innerHTML = "Berichtsberechnung fehlgeschlagen. Pädagogisches Bauchgefühl nutzen!"; }
+        }
+
+        function closeReport() { document.getElementById('report-modal').classList.add('hidden'); }
+
+        function undo() {
+            if(!game.history.length) return;
+            const last = game.history.pop();
+            const p = game.players[last.pIdx];
+            if(config.mode.includes('501') || config.mode === '301') p.score += last.val; else p.score -= last.val;
+            p.darts--; p.path.pop();
+            game.activeIdx = last.pIdx;
+            game.turn = []; 
+            updateUI();
         }
 
         function initNumpad() {
-            const np = document.getElementById('dart-numpad');
-            np.innerHTML = "";
-            [20,1,18,4,13,6,10,15,2,17,3,19,7,16,8,11,14,9,12,5].sort((a,b)=>b-a).forEach(i => {
-                const b = document.createElement('div');
-                b.className = 'key-btn';
+            const n = document.getElementById('numpad');
+            [20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1].forEach(i => {
+                const b = document.createElement('button');
+                b.className = 'key-btn text-sm';
                 b.innerText = i;
-                b.onclick = () => registerHit(i);
-                np.appendChild(b);
+                b.onclick = () => hit(i);
+                n.appendChild(b);
             });
         }
 
-        function initCharts() {
-            lChart = new Chart(document.getElementById('liveChart'), {
-                type: 'doughnut',
-                data: { datasets: [{ data:[1,1,1,1], backgroundColor:['#334155','#ef4444','#f59e0b','#020617'], borderWidth:0 }] },
-                options: { plugins:{legend:{display:false}}, cutout:'85%', responsive: true, maintainAspectRatio: false }
-            });
-        }
-
-        function updateLiveChart() {
-            lChart.data.datasets[0].data = [state.history.s, state.history.d, state.history.t, state.history.m];
-            lChart.update();
-        }
-
-        function openAnalysis() {
-            document.getElementById('analysis-modal').classList.remove('hidden');
-            const total = state.history.s + state.history.d + state.history.t + state.history.m;
-            const acc = total ? Math.round(((total-state.history.m)/total)*100) : 0;
-            
-            document.getElementById('ana-stats').innerHTML = `
-                <div class="bg-slate-800 p-6 rounded-2xl"><p class="text-[9px] font-bold text-slate-500 uppercase">Präzision</p><p class="text-3xl font-black">${acc}%</p></div>
-                <div class="bg-slate-800 p-6 rounded-2xl"><p class="text-[9px] font-bold text-slate-500 uppercase">Darts</p><p class="text-3xl font-black">${total}</p></div>
-                <div class="bg-slate-800 p-6 rounded-2xl"><p class="text-[9px] font-bold text-slate-500 uppercase">Triples</p><p class="text-3xl font-black text-yellow-500">${state.history.t}</p></div>
-                <div class="bg-slate-800 p-6 rounded-2xl"><p class="text-[9px] font-bold text-slate-500 uppercase">Fehlwürfe</p><p class="text-3xl font-black text-slate-600">${state.history.m}</p></div>
-            `;
-
-            const heat = document.getElementById('heatmap-grid');
-            heat.innerHTML = "";
-            [20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,25].forEach(v => {
-                const count = state.heatmap[v] || 0;
-                const op = Math.min(1, count / 5);
-                heat.innerHTML += `<div class="p-3 rounded-lg text-center text-[10px] font-bold" style="background:rgba(239,68,68,${op}); color:${op>0.3?'white':'#475569'}">${v===25?'B':v}</div>`;
-            });
-
-            if(pChart) pChart.destroy();
-            pChart = new Chart(document.getElementById('progChart'), {
+        function initChart() {
+            chart = new Chart(document.getElementById('game-chart'), {
                 type: 'line',
-                data: {
-                    labels: state.players[0].path.map((_,i)=>i+1),
-                    datasets: state.players.map((p,i)=>({
-                        label: p.name, data: p.path, borderColor: i===0?'#ef4444':'#3b82f6', tension:0.4, fill: false
-                    }))
-                },
-                options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}, responsive: true, maintainAspectRatio: false }
+                data: { labels: [], datasets: [{ label: 'Score', data: [], borderColor: '#ef4444', tension: 0.4, fill: true, backgroundColor: 'rgba(239,68,68,0.05)' }] },
+                options: { plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{display:false}}, responsive: true, maintainAspectRatio: false }
             });
         }
 
-        function closeAnalysis() { document.getElementById('analysis-modal').classList.add('hidden'); }
-        function undoLast() { alert("Undo wird in dieser Version noch implementiert."); }
+        function updateChart() {
+            const p = game.players[game.activeIdx];
+            chart.data.labels = p.path.map((_, i) => i);
+            chart.data.datasets[0].data = p.path;
+            chart.update('none');
+        }
     </script>
 </body>
 </html>

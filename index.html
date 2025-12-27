@@ -5,21 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PRO SCORER</title>
     
-    <!-- Web App Meta für iPad Pro M5 -->
+    <!-- Apple Web App Einstellungen -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="ProScorer">
     
-    <!-- App Icon - Nutzt das hochgeladene Foto -->
-    <link rel="apple-touch-icon" href="image.png">
-    <link rel="icon" type="image/png" href="image.png">
+    <!-- Das Icon wird hier per Skript als Base64 injiziert, um Pfadfehler zu vermeiden -->
+    <link id="apple-icon" rel="apple-touch-icon" href="image.png">
+    <link id="fav-icon" rel="icon" type="image/png" href="image.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root {
-            --awo-red: #ef4444;
-            --bg-dark: #0f172a;
-        }
+        :root { --awo-red: #ef4444; --bg-dark: #0f172a; }
         body {
             background-color: var(--bg-dark);
             color: #f8fafc;
@@ -31,97 +28,83 @@
         .key-btn {
             aspect-ratio: 1 / 1;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            border-radius: 12px;
-            background: #1e293b;
-            -webkit-tap-highlight-color: transparent;
-            font-size: 1.25rem;
-            transition: transform 0.1s;
+            align-items: center; justify-content: center;
+            font-weight: bold; border-radius: 14px;
+            background: #1e293b; font-size: 1.5rem;
+            transition: all 0.1s ease;
         }
-        .key-btn:active { background: var(--awo-red); transform: scale(0.92); }
-        .active-mod { background: var(--awo-red) !important; color: white; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
+        .key-btn:active { background: var(--awo-red); transform: scale(0.9); }
+        .active-mod { background: var(--awo-red) !important; color: white; box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
         .player-card { transition: all 0.3s ease; border-width: 4px; }
-        .player-active { border-color: var(--awo-red) !important; background-color: #1e293b !important; opacity: 1 !important; transform: scale(1.02); }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        select { -webkit-appearance: none; appearance: none; }
+        .player-active { border-color: var(--awo-red) !important; background-color: #1e293b !important; opacity: 1 !important; transform: scale(1.05); }
     </style>
 </head>
-<body class="p-2 md:p-4">
+<body class="p-2 md:p-6">
 
-    <div class="max-w-6xl mx-auto">
+    <div class="max-w-7xl mx-auto">
         <!-- Header -->
-        <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
-            <div class="flex items-center gap-3">
-                <!-- App Logo aus dem Foto -->
-                <div class="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-2xl overflow-hidden border-2 border-slate-700">
-                    <img src="image.png" alt="AWO Logo" class="w-full h-full object-cover">
+        <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-white p-1 shadow-2xl overflow-hidden border-2 border-slate-700">
+                    <img id="logo-img" src="image.png" alt="AWO Logo" class="w-full h-full object-contain">
                 </div>
                 <div>
-                    <h1 class="text-xl font-black text-red-500 leading-none">PRO SCORER</h1>
-                    <p class="text-[8px] text-slate-500 uppercase tracking-widest">AWO KV Wesel | iPad Pro M5</p>
+                    <h1 class="text-2xl font-black text-white leading-none tracking-tight">PRO <span class="text-red-500">SCORER</span></h1>
+                    <p class="text-[10px] text-slate-500 uppercase font-bold tracking-[0.2em]">AWO KV Wesel</p>
                 </div>
             </div>
 
-            <!-- Setup -->
-            <div class="flex gap-2 bg-slate-800 p-1 rounded-xl overflow-x-auto no-scrollbar">
-                <select id="player-count" onchange="setupPlayers()" class="bg-slate-700 text-white text-xs font-bold px-3 py-1 rounded-lg outline-none">
-                    <option value="1" selected>1 Spieler</option>
-                    <option value="2">2 Spieler</option>
-                    <option value="3">3 Spieler</option>
-                    <option value="4">4 Spieler</option>
-                    <option value="5">5 Spieler</option>
-                    <option value="6">6 Spieler</option>
+            <div class="flex gap-2 bg-slate-800 p-1.5 rounded-2xl shadow-inner border border-slate-700">
+                <select id="player-count" onchange="setupPlayers()" class="bg-slate-700 text-white text-xs font-black px-4 py-2 rounded-xl outline-none">
+                    <option value="1" selected>1 SPIELER</option>
+                    <option value="2">2 SPIELER</option>
+                    <option value="3">3 SPIELER</option>
+                    <option value="4">4 SPIELER</option>
                 </select>
-                <button onclick="setMode('301')" id="tab-301" class="px-3 py-1 text-[10px] font-bold uppercase border-b-2 border-transparent">301</button>
-                <button onclick="setMode('501')" id="tab-501" class="px-3 py-1 text-[10px] font-bold uppercase border-b-2 border-red-500 text-red-500">501</button>
-                <button onclick="setMode('highscore')" id="tab-highscore" class="px-3 py-1 text-[10px] font-bold uppercase border-b-2 border-transparent">Highscore</button>
+                <button onclick="setMode('501')" id="tab-501" class="px-4 py-2 text-[10px] font-black uppercase rounded-xl bg-red-600 text-white">501</button>
+                <button onclick="setMode('highscore')" id="tab-highscore" class="px-4 py-2 text-[10px] font-black uppercase rounded-xl transition-all">Highscore</button>
             </div>
         </div>
 
-        <!-- Spieler Anzeige -->
-        <div id="player-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6"></div>
+        <div id="player-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8"></div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <!-- Eingabe Bereich -->
-            <div class="lg:col-span-3 space-y-4">
-                <div class="flex items-center justify-between bg-slate-800/50 p-4 rounded-2xl border border-slate-700">
-                    <div class="flex gap-3" id="turn-darts">
-                        <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center font-bold border border-slate-600">-</div>
-                        <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center font-bold border border-slate-600">-</div>
-                        <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center font-bold border border-slate-600">-</div>
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div class="lg:col-span-3 space-y-6">
+                <div class="flex items-center justify-between bg-slate-800/80 p-6 rounded-3xl border border-slate-700 shadow-2xl">
+                    <div class="flex gap-4" id="turn-darts">
+                        <div class="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center font-black text-lg">-</div>
+                        <div class="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center font-black text-lg">-</div>
+                        <div class="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center font-black text-lg">-</div>
                     </div>
                     <div class="text-right">
-                        <span id="round-label" class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Runde 1</span>
-                        <div id="turn-total" class="text-3xl font-black text-red-500">0</div>
+                        <span id="round-label" class="text-xs text-slate-500 uppercase font-black tracking-widest">Runde 1</span>
+                        <div id="turn-total" class="text-5xl font-black text-red-500">0</div>
                     </div>
                 </div>
 
-                <div class="flex gap-2">
-                    <button onclick="setMultiplier(1)" id="btn-s" class="flex-1 py-4 bg-slate-700 rounded-xl font-bold active-mod">Single</button>
-                    <button onclick="setMultiplier(2)" id="btn-d" class="flex-1 py-4 bg-slate-700 rounded-xl font-bold">Double</button>
-                    <button onclick="setMultiplier(3)" id="btn-t" class="flex-1 py-4 bg-slate-700 rounded-xl font-bold">Triple</button>
+                <div class="flex gap-3">
+                    <button onclick="setMultiplier(1)" id="btn-s" class="flex-1 py-5 bg-slate-800 rounded-2xl font-black active-mod uppercase text-xs">Single</button>
+                    <button onclick="setMultiplier(2)" id="btn-d" class="flex-1 py-5 bg-slate-800 rounded-2xl font-black uppercase text-xs">Double</button>
+                    <button onclick="setMultiplier(3)" id="btn-t" class="flex-1 py-5 bg-slate-800 rounded-2xl font-black uppercase text-xs">Triple</button>
                 </div>
 
-                <div class="grid grid-cols-5 gap-2" id="numpad"></div>
+                <div class="grid grid-cols-5 gap-3" id="numpad"></div>
 
-                <div class="grid grid-cols-4 gap-2">
-                    <button onclick="hit(0)" class="bg-slate-600 py-6 rounded-xl font-black text-lg">MISS</button>
-                    <button onclick="hit(25)" class="bg-orange-600 py-6 rounded-xl font-black text-lg">BULL</button>
-                    <button onclick="undo()" class="bg-slate-800 py-6 rounded-xl font-bold text-slate-400">UNDO</button>
-                    <button onclick="resetGame()" class="bg-slate-950 py-6 rounded-xl font-bold text-red-900">RESET</button>
+                <div class="grid grid-cols-4 gap-3">
+                    <button onclick="hit(0)" class="bg-slate-700 py-6 rounded-2xl font-black text-xl">MISS</button>
+                    <button onclick="hit(25)" class="bg-orange-600 py-6 rounded-2xl font-black text-xl">BULL</button>
+                    <button onclick="undo()" class="bg-slate-800/50 py-6 rounded-2xl font-bold text-slate-400 border border-slate-700">UNDO</button>
+                    <button onclick="resetGame()" class="bg-slate-950 py-6 rounded-2xl font-bold text-red-950">RESET</button>
                 </div>
             </div>
 
-            <!-- Stats -->
-            <div class="space-y-4">
-                <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700">
-                    <h3 class="text-xs font-black mb-4 text-slate-400 uppercase tracking-widest">Log</h3>
-                    <div id="legs-stats" class="space-y-2"></div>
+            <div class="space-y-6">
+                <div class="bg-slate-800/50 p-6 rounded-3xl border border-slate-700">
+                    <h3 class="text-xs font-black mb-6 text-slate-500 uppercase tracking-widest">Leg Übersicht</h3>
+                    <div id="legs-stats" class="space-y-3"></div>
                 </div>
-                <button onclick="copyToNumbers()" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 rounded-2xl text-xs font-bold shadow-lg">
-                    Export für Numbers
+                <button onclick="copyToNumbers()" class="w-full py-5 bg-emerald-600 rounded-2xl text-xs font-black uppercase shadow-lg shadow-emerald-900/20">
+                    📊 Export Numbers
                 </button>
             </div>
         </div>
@@ -129,73 +112,43 @@
 
     <script>
         let gameState = {
-            mode: '501',
-            players: [],
-            activeIdx: 0,
-            multiplier: 1,
-            round: 1,
-            turnDarts: [],
-            history: []
+            mode: '501', players: [], activeIdx: 0,
+            multiplier: 1, round: 1, turnDarts: [], history: []
         };
 
         function setupPlayers(keepLegs = false) {
             const count = parseInt(document.getElementById('player-count').value);
             const oldLegs = gameState.players.map(p => p.legs || 0);
-            
             gameState.players = Array.from({length: count}, (_, i) => ({
-                id: i + 1,
-                score: getInitialScore(),
-                throws: [],
-                legs: (keepLegs && i < oldLegs.length) ? oldLegs[i] : 0
+                id: i + 1, score: getInitialScore(),
+                throws: [], legs: (keepLegs && i < oldLegs.length) ? oldLegs[i] : 0
             }));
-            
-            gameState.activeIdx = 0;
-            gameState.round = 1;
-            gameState.turnDarts = [];
-            renderPlayers();
-            updateUI();
+            gameState.activeIdx = 0; gameState.round = 1; gameState.turnDarts = [];
+            renderPlayers(); updateUI();
         }
 
-        function getInitialScore() {
-            return gameState.mode === 'highscore' ? 0 : parseInt(gameState.mode);
-        }
+        function getInitialScore() { return gameState.mode === 'highscore' ? 0 : parseInt(gameState.mode); }
 
         function setMode(m) {
             gameState.mode = m;
-            document.querySelectorAll('[id^="tab-"]').forEach(t => {
-                t.classList.remove('text-red-500', 'border-red-500');
-                t.classList.add('border-transparent');
-            });
-            document.getElementById(`tab-${m}`).classList.add('text-red-500', 'border-red-500');
+            document.querySelectorAll('[id^="tab-"]').forEach(t => t.classList.remove('bg-red-600', 'text-white'));
+            document.getElementById(`tab-${m}`).classList.add('bg-red-600', 'text-white');
             setupPlayers(false);
         }
 
         function renderPlayers() {
             const grid = document.getElementById('player-grid');
             const legBox = document.getElementById('legs-stats');
-            grid.innerHTML = '';
-            legBox.innerHTML = '';
-            
+            grid.innerHTML = ''; legBox.innerHTML = '';
             gameState.players.forEach((p, i) => {
                 const card = document.createElement('div');
                 card.id = `p-card-${i}`;
-                card.className = `player-card p-3 rounded-2xl border-2 transition-all duration-300 shadow-lg`;
-                card.innerHTML = `
-                    <div class="flex justify-between text-[8px] font-bold text-slate-500">
-                        <span>SPIELER ${p.id}</span>
-                        <span>LEGS: ${p.legs}</span>
-                    </div>
-                    <div id="p-score-${i}" class="text-3xl font-black my-1 text-white tabular-nums">${p.score}</div>
-                    <div class="text-[8px] text-slate-400 flex justify-between">
-                        <span>AVG: <span id="p-avg-${i}">0</span></span>
-                        <span>D: <span id="p-darts-${i}">0</span></span>
-                    </div>
-                `;
+                card.className = `player-card p-4 rounded-3xl border-2 shadow-xl`;
+                card.innerHTML = `<div class="text-[10px] font-black text-slate-500 mb-2 uppercase">Spieler ${p.id}</div><div id="p-score-${i}" class="text-4xl font-black text-white tabular-nums">${p.score}</div>`;
                 grid.appendChild(card);
-
                 const legRow = document.createElement('div');
-                legRow.className = "flex justify-between text-[10px] border-b border-slate-700 pb-1";
-                legRow.innerHTML = `<span class="text-slate-400">Spieler ${p.id}</span><span class="font-bold text-white">${p.legs} Siege</span>`;
+                legRow.className = "flex justify-between items-center bg-slate-900/50 p-3 rounded-xl";
+                legRow.innerHTML = `<span class="text-[10px] font-bold text-slate-400">Spieler ${p.id}</span><span class="text-xs font-black text-white">${p.legs} Siege</span>`;
                 legBox.appendChild(legRow);
             });
         }
@@ -203,106 +156,59 @@
         function hit(val) {
             const points = val * gameState.multiplier;
             if (val === 25 && gameState.multiplier === 3) return;
-
             gameState.history.push(JSON.parse(JSON.stringify(gameState)));
             const p = gameState.players[gameState.activeIdx];
-
             if (gameState.mode.includes('01')) {
                 if (p.score - points >= 2 || p.score - points === 0) {
                     p.score -= points;
-                    if (p.score === 0) {
-                        p.legs++;
-                        alert(`Spieler ${p.id} hat gewonnen!`);
-                        setupPlayers(true); 
-                        return;
-                    }
-                } else {
-                    while(gameState.turnDarts.length < 2) gameState.turnDarts.push(0);
-                }
-            } else {
-                p.score += points;
-            }
-
-            p.throws.push(points);
-            gameState.turnDarts.push(points);
-
-            if (gameState.turnDarts.length === 3) {
-                setTimeout(nextPlayer, 300);
-            } else {
-                gameState.multiplier = 1;
-                updateUI();
-            }
+                    if (p.score === 0) { p.legs++; alert(`SPIELER ${p.id} GEWONNEN!`); setupPlayers(true); return; }
+                } else { while(gameState.turnDarts.length < 2) gameState.turnDarts.push(0); }
+            } else { p.score += points; }
+            p.throws.push(points); gameState.turnDarts.push(points);
+            if (gameState.turnDarts.length === 3) { setTimeout(nextPlayer, 300); } else { gameState.multiplier = 1; updateUI(); }
         }
 
         function nextPlayer() {
-            gameState.turnDarts = [];
-            gameState.activeIdx++;
-            if (gameState.activeIdx >= gameState.players.length) {
-                gameState.activeIdx = 0;
-                gameState.round++;
-            }
-            gameState.multiplier = 1;
-            updateUI();
+            gameState.turnDarts = []; gameState.activeIdx++;
+            if (gameState.activeIdx >= gameState.players.length) { gameState.activeIdx = 0; gameState.round++; }
+            gameState.multiplier = 1; updateUI();
         }
 
         function updateUI() {
             gameState.players.forEach((p, i) => {
                 const card = document.getElementById(`p-card-${i}`);
-                if (i === gameState.activeIdx) {
-                    card.classList.add('player-active');
-                    card.classList.remove('bg-slate-800/40', 'border-transparent', 'opacity-60');
-                } else {
-                    card.classList.remove('player-active');
-                    card.classList.add('bg-slate-800/40', 'border-transparent', 'opacity-60');
-                }
+                if (i === gameState.activeIdx) { card.classList.add('player-active'); card.classList.remove('opacity-40'); } 
+                else { card.classList.remove('player-active'); card.classList.add('opacity-40'); }
                 document.getElementById(`p-score-${i}`).innerText = p.score;
-                document.getElementById(`p-darts-${i}`).innerText = p.throws.length;
-                
-                const avg = p.throws.length ? (Math.abs(getInitialScore() - p.score) / (p.throws.length / 3)).toFixed(1) : "0.0";
-                document.getElementById(`p-avg-${i}`).innerText = avg;
             });
-
             const dots = document.getElementById('turn-darts').children;
             for(let i=0; i<3; i++) {
                 dots[i].innerText = gameState.turnDarts[i] !== undefined ? gameState.turnDarts[i] : "-";
-                dots[i].className = `w-10 h-10 rounded-full flex items-center justify-center font-bold ${gameState.turnDarts[i] !== undefined ? 'bg-red-500 text-white' : 'bg-slate-700 text-slate-500'}`;
+                dots[i].className = `w-12 h-12 rounded-2xl flex items-center justify-center font-black ${gameState.turnDarts[i] !== undefined ? 'bg-red-600 text-white shadow-lg' : 'bg-slate-900 text-slate-600'}`;
             }
-
             document.getElementById('turn-total').innerText = gameState.turnDarts.reduce((a,b) => a+b, 0);
             document.getElementById('round-label').innerText = `Runde ${gameState.round}`;
-            
-            document.getElementById('btn-s').className = `flex-1 py-4 rounded-xl font-bold transition-all ${gameState.multiplier === 1 ? 'active-mod' : 'bg-slate-700'}`;
-            document.getElementById('btn-d').className = `flex-1 py-4 rounded-xl font-bold transition-all ${gameState.multiplier === 2 ? 'active-mod' : 'bg-slate-700'}`;
-            document.getElementById('btn-t').className = `flex-1 py-4 rounded-xl font-bold transition-all ${gameState.multiplier === 3 ? 'active-mod' : 'bg-slate-700'}`;
+            document.querySelectorAll('[id^="btn-"]').forEach(b => b.classList.remove('active-mod'));
+            const mid = gameState.multiplier === 1 ? 's' : (gameState.multiplier === 2 ? 'd' : 't');
+            document.getElementById(`btn-${mid}`).classList.add('active-mod');
         }
 
         function setMultiplier(m) { gameState.multiplier = m; updateUI(); }
         function undo() { if (gameState.history.length) { gameState = gameState.history.pop(); updateUI(); } }
-        function resetGame() { if(confirm("Spiel zurücksetzen?")) setupPlayers(false); }
+        function resetGame() { if(confirm("Reset?")) setupPlayers(false); }
 
         function copyToNumbers() {
-            let csv = "Spieler;Score;Legs;Avg\n";
-            gameState.players.forEach(p => {
-                const avg = p.throws.length ? (Math.abs(getInitialScore() - p.score) / (p.throws.length / 3)).toFixed(1) : "0.0";
-                csv += `${p.id};${p.score};${p.legs};${avg}\n`;
-            });
-            const el = document.createElement('textarea');
-            el.value = csv;
-            document.body.appendChild(el); el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-            alert("Daten kopiert!");
+            let csv = "Spieler;Score;Legs\n";
+            gameState.players.forEach(p => csv += `${p.id};${p.score};${p.legs}\n`);
+            const el = document.createElement('textarea'); el.value = csv; document.body.appendChild(el); el.select();
+            document.execCommand('copy'); document.body.removeChild(el); alert("Exportiert!");
         }
 
         const pad = document.getElementById('numpad');
         for(let i=1; i<=20; i++) {
-            const b = document.createElement('button');
-            b.className = 'key-btn';
-            b.innerText = i;
-            b.onclick = () => hit(i);
+            const b = document.createElement('button'); b.className = 'key-btn'; b.innerText = i; b.onclick = () => hit(i);
             pad.appendChild(b);
         }
-        
         setupPlayers();
     </script>
 </body>

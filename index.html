@@ -1,387 +1,459 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <link rel="apple-touch-icon" href="image.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>DART PRO AI - AWO KV Wesel</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <style>
-        :root { --accent: #ef4444; --bg: #020617; }
-        body { background-color: var(--bg); color: #f8fafc; font-family: 'Inter', sans-serif; touch-action: manipulation; overflow: hidden; height: 100vh; }
-        
-        .view-ipad { flex-direction: row; }
-        .view-iphone { flex-direction: column; }
-        
-        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); }
-        .setup-card { background: #1e293b; border: 2px solid #334155; transition: 0.2s; cursor: pointer; }
-        .setup-card.selected { border-color: var(--accent); background: #2d3748; box-shadow: 0 0 20px rgba(239, 68, 68, 0.2); }
-        
-        .key-btn { aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; font-weight: 900; border-radius: 12px; background: #1e293b; border: 1px solid #334155; cursor: pointer; }
-        .active-mod { background: var(--accent) !important; color: white; border-color: white !important; }
-        
-        .player-card { background: #0f172a; padding: 12px; border-radius: 16px; border: 2px solid transparent; transition: 0.3s; }
-        .player-card.active { border-color: var(--accent); background: #1e293b; transform: scale(1.05); }
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { 
+  Target, 
+  Users, 
+  Settings2, 
+  Clock, 
+  RotateCcw, 
+  Info,
+  Play,
+  BarChart3,
+  Dna,
+  X,
+  Download,
+  LayoutDashboard,
+  Trophy,
+  ChevronDown,
+  Activity
+} from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-        #launcher { position: fixed; inset: 0; background: #020617; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        
-        select { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em; }
-        
-        .ai-glow { animation: ai-glow 3s infinite alternate; }
-        @keyframes ai-glow { from { box-shadow: 0 0 5px rgba(239, 68, 68, 0.2); } to { box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); } }
-    </style>
-</head>
-<body class="flex" id="app-body">
+/**
+ * DART PRO AI - FULL TRAINING SUITE
+ * Strukturierte Sektionen & Erweiterte Übungsbibliothek
+ * Optimiert für iPad Pro M5 | AWO KV Wesel
+ */
 
-    <!-- DEVICE SELECTOR (LAUNCHER) -->
-    <div id="launcher">
-        <div class="text-center mb-12">
-            <h1 class="text-6xl font-black italic tracking-tighter">DART<span class="text-red-500">PRO</span> AI</h1>
-            <p class="text-slate-500 text-xs font-bold uppercase tracking-[0.3em]">AWO KV Wesel • Pädagogik Edition</p>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl px-6">
-            <button onclick="boot('ipad')" class="p-10 glass rounded-[3rem] border-2 border-slate-700 hover:border-red-500 transition-all text-left group">
-                <span class="text-4xl block mb-4 group-hover:scale-110 transition-transform">💻</span>
-                <span class="text-2xl font-black block text-white">iPad Pro / Tablet</span>
-                <span class="text-slate-400 text-sm">Vollständiges Dashboard-Layout</span>
+const TRAINING_CATEGORIES = {
+  MATCH: {
+    label: "Wettkampf-Modi",
+    modes: {
+      SCORING_501: { 
+        name: "501 (Double Out)", 
+        desc: "Der Standard-Wettkampf.", 
+        instruction: "Bringe 501 auf 0. Der letzte Dart muss ein Double sein.",
+        startScore: 501 
+      },
+      SCORING_301: { 
+        name: "301 (Single Out)", 
+        desc: "Schnelle Einsteiger-Runde.", 
+        instruction: "Ideal für Anfänger. Kein Double zum Abschluss nötig.",
+        startScore: 301 
+      },
+      CRICKET: { 
+        name: "Cricket (Standard)", 
+        desc: "Taktik & Präzision.", 
+        instruction: "Triff die Zahlen 15-20 und das Bull jeweils 3-mal.",
+        startScore: 0 
+      }
+    }
+  },
+  EXERCISES: {
+    label: "Gezielte Übungen",
+    modes: {
+      BOBS_27: { 
+        name: "Bob's 27", 
+        desc: "Härtestes Doppel-Training.", 
+        instruction: "Start bei 27 Pkt. Triff D1-D20 & Bull. Treffer addieren, Fehlwürfe (alle 3) subtrahieren den Wert.",
+        startScore: 27 
+      },
+      AROUND_THE_CLOCK: { 
+        name: "Around The Clock", 
+        desc: "Board-Abdeckung.", 
+        instruction: "Triff nacheinander 1, 2, 3... bis 20 und Bull.",
+        startScore: 0 
+      },
+      SHANGHAI: { 
+        name: "Shanghai Night", 
+        desc: "Konstanz-Training.", 
+        instruction: "Wirf nacheinander auf 1, dann 2, dann 3... Ziel: In einer Aufnahme Single, Double & Triple der gleichen Zahl treffen.",
+        startScore: 0 
+      },
+      DOUBLES_ONLY: { 
+        name: "Nur Doppel", 
+        desc: "Finishing-Grundlagen.", 
+        instruction: "Wirf nur auf Doppelfelder. Jedes getroffene Doppel zählt.",
+        startScore: 0 
+      }
+    }
+  },
+  ANALYSIS: {
+    label: "Spezial-Analysen",
+    modes: {
+      JDC_ROUTINE: { 
+        name: "JDC Challenge", 
+        desc: "Standardisiertes Rating.", 
+        instruction: "Gezielte Würfe auf Triple, Double und Scoring-Felder zur Ermittlung eines Skill-Levels.",
+        startScore: 0 
+      },
+      CATCH_121: { 
+        name: "121 (Pressure)", 
+        desc: "Check-Out unter Druck.", 
+        instruction: "Checke 121 in 9 Darts. Erfolg = +1 Punkt, Misserfolg = Reset.",
+        startScore: 121 
+      }
+    }
+  }
+};
+
+const App = () => {
+  const [view, setView] = useState('setup');
+  const [playerCount, setPlayerCount] = useState(1);
+  const [selectedMode, setSelectedMode] = useState('SCORING_501');
+  const [players, setPlayers] = useState([]);
+  const [activePlayerIdx, setActivePlayerIdx] = useState(0);
+  const [showInfo, setShowInfo] = useState(false);
+  const [turnDarts, setTurnDarts] = useState([]);
+  const [multiplier, setMultiplier] = useState(1);
+  const [timeLeft, setTimeLeft] = useState(45 * 60);
+  
+  // Ref für Auto-Scroll in Tabellen
+  const tableRef = useRef(null);
+
+  // Timer Effekt
+  useEffect(() => {
+    if (view === 'playing' && timeLeft > 0) {
+      const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
+      return () => clearInterval(timer);
+    }
+  }, [view, timeLeft]);
+
+  const getCurrentModeData = () => {
+    for (const cat in TRAINING_CATEGORIES) {
+      if (TRAINING_CATEGORIES[cat].modes[selectedMode]) {
+        return TRAINING_CATEGORIES[cat].modes[selectedMode];
+      }
+    }
+    return null;
+  };
+
+  const initGame = () => {
+    const modeData = getCurrentModeData();
+    const newPlayers = Array.from({ length: playerCount }, (_, i) => ({
+      id: i,
+      name: `Tln ${i + 1}`,
+      score: modeData.startScore,
+      dartsThrown: 0,
+      history: [],
+      rawTurns: [],
+      avg: 0,
+      isGameOver: false,
+      currentStep: 1 
+    }));
+    setPlayers(newPlayers);
+    setView('playing');
+    setTimeLeft(45 * 60);
+  };
+
+  const handleScoreInput = (value) => {
+    if (turnDarts.length >= 3 || players[activePlayerIdx].isGameOver) return;
+    setTurnDarts(prev => [...prev, { val: value, mult: multiplier }]);
+    setMultiplier(1);
+  };
+
+  const processTurn = useCallback(() => {
+    const updatedPlayers = [...players];
+    const p = updatedPlayers[activePlayerIdx];
+    const modeData = getCurrentModeData();
+    let turnPoints = 0;
+
+    // Logik für Bob's 27
+    if (selectedMode === 'BOBS_27') {
+      const targetDouble = p.currentStep === 21 ? 25 : p.currentStep;
+      const hits = turnDarts.filter(d => d.val === targetDouble && d.mult === 2).length;
+      if (hits > 0) {
+        turnPoints = hits * (targetDouble * 2);
+        p.score += turnPoints;
+      } else {
+        const penalty = targetDouble * 2;
+        p.score -= penalty;
+        turnPoints = -penalty;
+      }
+      p.currentStep++;
+      if (p.score <= 0) { p.score = 0; p.isGameOver = true; }
+      if (p.currentStep > 21) p.isGameOver = true;
+    } 
+    // Logik für Standard Scoring
+    else if (selectedMode.includes('SCORING')) {
+      const total = turnDarts.reduce((a, b) => a + (b.val * b.mult), 0);
+      if (p.score - total >= (selectedMode === 'SCORING_501' ? 2 : 0) || p.score - total === 0) {
+        p.score -= total;
+      }
+      turnPoints = total;
+    }
+    // Sonstige (Einfach Addieren)
+    else {
+      turnPoints = turnDarts.reduce((a, b) => a + (b.val * b.mult), 0);
+      p.score += turnPoints;
+    }
+
+    p.dartsThrown += 3;
+    p.history.push({ turn: p.history.length + 1, score: turnPoints, remaining: p.score });
+    p.rawTurns.push({ 
+      timestamp: new Date().toLocaleTimeString(), 
+      score: turnPoints, 
+      darts: turnDarts.map(d => `${d.mult === 3 ? 'T' : d.mult === 2 ? 'D' : 'S'}${d.val}`).join('|'),
+      remaining: p.score 
+    });
+    
+    // Schnitt berechnen
+    p.avg = (p.history.reduce((a, b) => a + Math.abs(b.score), 0) / (p.dartsThrown / 3)).toFixed(1);
+
+    setPlayers(updatedPlayers);
+    setTurnDarts([]);
+    setActivePlayerIdx((activePlayerIdx + 1) % playerCount);
+  }, [turnDarts, players, activePlayerIdx, selectedMode, playerCount]);
+
+  useEffect(() => {
+    if (turnDarts.length === 3) {
+      const timer = setTimeout(processTurn, 600);
+      return () => clearTimeout(timer);
+    }
+  }, [turnDarts, processTurn]);
+
+  const exportToCSV = () => {
+    let csvContent = "data:text/csv;charset=utf-8,Spieler,Zeit,Aufnahme,Punkte,Rest\n";
+    players.forEach(p => p.rawTurns.forEach((t, i) => {
+      csvContent += `${p.name},${t.timestamp},${i+1},${t.score},${t.remaining}\n`;
+    }));
+    const link = document.createElement("a");
+    link.setAttribute("href", encodeURI(csvContent));
+    link.setAttribute("download", `DART_PRO_AWO_EXPORT.csv`);
+    link.click();
+  };
+
+  if (view === 'setup') {
+    return (
+      <div className="min-h-screen bg-[#020617] text-white p-6 flex items-center justify-center font-sans">
+        <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-10">
+            <Target size={200} />
+          </div>
+          
+          <header className="text-center mb-12 relative">
+            <h1 className="text-5xl font-black italic tracking-tighter uppercase leading-none">DART<span className="text-red-600">PRO</span></h1>
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mt-3">AWO KV Wesel • Social Pedagogy Unit</p>
+          </header>
+
+          <div className="space-y-8 relative">
+            <section>
+              <label className="text-[10px] font-black uppercase text-slate-500 mb-3 flex items-center gap-2">
+                <Users size={12}/> Teilnehmer wählen
+              </label>
+              <div className="grid grid-cols-6 gap-2">
+                {[1, 2, 3, 4, 5, 6].map(n => (
+                  <button key={n} onClick={() => setPlayerCount(n)} className={`py-4 rounded-2xl font-black transition-all border-2 ${playerCount === n ? 'bg-red-600 border-red-500 shadow-lg shadow-red-900/40' : 'bg-slate-800 border-transparent text-slate-400 hover:bg-slate-700'}`}>{n}</button>
+                ))}
+              </div>
+            </section>
+
+            <section>
+              <label className="text-[10px] font-black uppercase text-slate-500 mb-3 flex items-center gap-2">
+                <Activity size={12}/> Programm-Struktur
+              </label>
+              <div className="relative group">
+                <select 
+                  value={selectedMode} 
+                  onChange={(e) => setSelectedMode(e.target.value)} 
+                  className="w-full p-5 bg-slate-800 rounded-2xl border-2 border-slate-700 font-bold appearance-none outline-none focus:border-red-600 transition-colors"
+                >
+                  {Object.entries(TRAINING_CATEGORIES).map(([catKey, cat]) => (
+                    <optgroup key={catKey} label={cat.label} className="bg-slate-900 text-slate-500 font-black uppercase text-xs">
+                      {Object.entries(cat.modes).map(([modeKey, mode]) => (
+                        <option key={modeKey} value={modeKey} className="bg-slate-800 text-white font-bold py-2 uppercase">{mode.name}</option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" size={20} />
+              </div>
+              <div className="mt-4 p-5 bg-slate-950/50 rounded-2xl border border-slate-800">
+                <h4 className="text-[10px] font-black text-red-500 uppercase mb-1">Fokus: {getCurrentModeData()?.desc}</h4>
+                <p className="text-sm text-slate-400 italic leading-snug">{getCurrentModeData()?.instruction}</p>
+              </div>
+            </section>
+
+            <button onClick={initGame} className="w-full py-6 bg-white text-black rounded-3xl font-black text-xl hover:bg-red-600 hover:text-white transition-all transform active:scale-95 shadow-xl">
+              TRAINING STARTEN
             </button>
-            <button onclick="boot('iphone')" class="p-10 glass rounded-[3rem] border-2 border-slate-700 hover:border-red-500 transition-all text-left group">
-                <span class="text-4xl block mb-4 group-hover:scale-110 transition-transform">📱</span>
-                <span class="text-2xl font-black block text-white">iPhone / Handy</span>
-                <span class="text-slate-400 text-sm">Optimierter mobiler Scorer</span>
-            </button>
+          </div>
         </div>
+      </div>
+    );
+  }
+
+  if (view === 'analysis') {
+    return (
+      <div className="min-h-screen bg-[#020617] text-white p-6 overflow-y-auto">
+        <div className="max-w-6xl mx-auto space-y-6">
+          <header className="flex justify-between items-center bg-slate-900 p-8 rounded-[2.5rem] border border-slate-800 shadow-2xl">
+            <div>
+              <h2 className="text-3xl font-black italic uppercase tracking-tighter">Session <span className="text-red-500">Analytics</span></h2>
+              <p className="text-xs text-slate-500 font-bold uppercase mt-1">Dokumentations-Modul für Pädagogisches Coaching</p>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={exportToCSV} className="flex items-center gap-2 bg-green-600 px-6 py-3 rounded-2xl text-[10px] font-black uppercase hover:bg-green-500 transition-all shadow-lg shadow-green-900/20">
+                <Download size={16}/> Export Excel / Numbers
+              </button>
+              <button onClick={() => setView('playing')} className="bg-slate-800 px-6 py-3 rounded-2xl text-[10px] font-black uppercase hover:bg-red-600 transition-all">Zurück</button>
+            </div>
+          </header>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-12">
+            {players.map(p => (
+              <div key={p.id} className="bg-slate-900 p-8 rounded-[2.5rem] border border-slate-800 space-y-6 shadow-xl">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-2xl font-black text-white">{p.name}</h3>
+                    <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">{selectedMode}</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-4xl font-black italic tracking-tighter">{p.avg}</span>
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Ø Aufnahme</p>
+                  </div>
+                </div>
+                
+                <div className="h-56 w-full bg-slate-950 rounded-2xl p-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={p.history}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                      <XAxis dataKey="turn" hide />
+                      <YAxis stroke="#475569" fontSize={10} axisLine={false} tickLine={false} />
+                      <Tooltip contentStyle={{backgroundColor: '#0f172a', borderRadius: '12px', border: '1px solid #1e293b'}} />
+                      <Line type="monotone" dataKey="score" stroke="#ef4444" strokeWidth={4} dot={false} activeDot={{r: 6, fill: '#ef4444'}} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-slate-800/40 p-4 rounded-2xl border border-slate-800 text-center">
+                    <p className="text-[10px] font-black text-slate-500 uppercase mb-1">Darts geworfen</p>
+                    <p className="text-2xl font-black">{p.dartsThrown}</p>
+                  </div>
+                  <div className="bg-slate-800/40 p-4 rounded-2xl border border-slate-800 text-center">
+                    <p className="text-[10px] font-black text-slate-500 uppercase mb-1">Letzter Score</p>
+                    <p className="text-2xl font-black text-red-500">{p.rawTurns[p.rawTurns.length-1]?.score || 0}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#020617] text-white flex flex-col h-screen overflow-hidden font-sans">
+      <header className="bg-slate-900 border-b border-slate-800 px-8 py-4 flex justify-between items-center shadow-2xl relative z-10">
+        <div className="flex items-center gap-6">
+           <button onClick={() => setView('setup')} className="text-slate-500 hover:text-white transition-colors"><RotateCcw size={22}/></button>
+           <div>
+              <h2 className="text-xl font-black italic tracking-tighter leading-none">DART<span className="text-red-500">PRO</span></h2>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{getCurrentModeData()?.name}</p>
+           </div>
+        </div>
+
+        <div className={`flex items-center gap-4 px-8 py-3 rounded-2xl border-2 transition-all ${timeLeft < 300 ? 'border-red-600 bg-red-600/10 animate-pulse' : 'border-slate-800 bg-slate-950'}`}>
+          <Clock size={20} className={timeLeft < 300 ? 'text-red-500' : 'text-slate-500'} />
+          <span className="text-3xl font-black tabular-nums tracking-tighter">{Math.floor(timeLeft/60)}:{(timeLeft%60).toString().padStart(2,'0')}</span>
+        </div>
+
+        <div className="flex gap-3">
+          <button onClick={() => setShowInfo(true)} className="p-3 bg-slate-800 hover:bg-slate-700 rounded-xl transition-colors"><Info size={22}/></button>
+          <button onClick={() => setView('analysis')} className="bg-white text-black px-6 py-3 rounded-xl text-[11px] font-black uppercase flex items-center gap-2 hover:bg-red-600 hover:text-white transition-all shadow-lg">
+            <LayoutDashboard size={18} /> Analyse
+          </button>
+        </div>
+      </header>
+
+      <div className="flex flex-1 overflow-hidden relative">
+        <aside className="w-72 bg-slate-900/50 border-r border-slate-800 p-6 space-y-3 overflow-y-auto">
+          {players.map((p, idx) => (
+            <div key={p.id} className={`p-5 rounded-3xl border-2 transition-all relative overflow-hidden ${idx === activePlayerIdx ? 'bg-red-600/10 border-red-500 scale-[1.02] shadow-2xl shadow-red-900/20' : 'bg-slate-800/30 border-transparent opacity-40'}`}>
+              <div className="flex justify-between items-center relative z-10">
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{p.name}</span>
+                {p.isGameOver && <Trophy size={14} className="text-yellow-500" />}
+              </div>
+              <div className="text-4xl font-black italic tracking-tighter mt-1 relative z-10">{p.score}</div>
+              {idx === activePlayerIdx && <div className="absolute top-0 right-0 p-2 opacity-5"><Dna size={80} /></div>}
+            </div>
+          ))}
+        </aside>
+
+        <main className="flex-1 p-8 flex flex-col gap-6 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-red-950/10 via-[#020617] to-[#020617] relative">
+          <div className="flex-1 flex flex-col items-center justify-center relative">
+            <div className={`text-[16rem] font-black italic leading-none tracking-tighter transition-all duration-500 ${players[activePlayerIdx]?.isGameOver ? 'text-slate-800 scale-90 blur-sm' : 'text-white drop-shadow-[0_0_60px_rgba(239,68,68,0.2)]'}`}>
+              {players[activePlayerIdx]?.score}
+            </div>
+            
+            {selectedMode === 'BOBS_27' && !players[activePlayerIdx]?.isGameOver && (
+              <div className="absolute top-10 flex flex-col items-center">
+                <span className="text-[10px] font-black text-red-500 uppercase tracking-[0.5em] mb-2 animate-pulse">Aktuelles Ziel</span>
+                <div className="px-10 py-4 bg-red-600 rounded-3xl text-3xl font-black italic uppercase shadow-2xl shadow-red-900/50">
+                   {players[activePlayerIdx]?.currentStep === 21 ? 'BULL' : `DOPPEL ${players[activePlayerIdx]?.currentStep}`}
+                </div>
+              </div>
+            )}
+
+            {players[activePlayerIdx]?.isGameOver && (
+              <div className="absolute inset-0 flex items-center justify-center bg-[#020617]/40 backdrop-blur-xl rounded-[4rem] border border-slate-800/50 m-12">
+                <div className="text-center">
+                  <Trophy size={80} className="text-yellow-500 mx-auto mb-6" />
+                  <h3 className="text-5xl font-black text-white uppercase italic tracking-tighter">FINISH</h3>
+                  <p className="text-slate-400 mt-2 font-black uppercase tracking-widest">Trainingseinheit beendet für {players[activePlayerIdx]?.name}</p>
+                  <button onClick={() => setView('analysis')} className="mt-8 px-10 py-4 bg-red-600 rounded-2xl font-black uppercase tracking-widest hover:bg-red-500 transition-all">Zum Ergebnisbericht</button>
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-5 mt-12">
+              {[0, 1, 2].map(i => (
+                <div key={i} className={`w-24 h-28 rounded-3xl border-2 flex items-center justify-center text-4xl font-black transition-all transform ${turnDarts[i] ? 'bg-red-600 border-red-400 -translate-y-4 shadow-2xl shadow-red-900/50 scale-110' : 'bg-slate-950 border-slate-800 text-slate-800 opacity-30'}`}>
+                  {turnDarts[i] ? `${turnDarts[i].mult === 3 ? 'T' : turnDarts[i].mult === 2 ? 'D' : ''}${turnDarts[i].val}` : ''}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-4 gap-4 h-72">
+             <div className="flex flex-col gap-2">
+                {['Single', 'Double', 'Triple'].map((m, i) => (
+                  <button key={m} onClick={() => setMultiplier(i+1)} className={`flex-1 rounded-[1.5rem] font-black uppercase text-xs transition-all border-2 ${multiplier === i+1 ? 'bg-white text-black border-white shadow-xl scale-105' : 'bg-slate-900 text-slate-500 border-slate-800'}`}>{m}</button>
+                ))}
+             </div>
+             <div className="col-span-3 grid grid-cols-7 gap-2">
+                {[20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map(n => (
+                  <button key={n} onClick={() => handleScoreInput(n)} className="bg-slate-900 border-2 border-slate-800/50 rounded-2xl font-black text-2xl hover:bg-slate-800 hover:border-red-600/50 active:scale-90 transition-all">{n}</button>
+                ))}
+                <button onClick={() => handleScoreInput(25)} className="bg-red-950/40 border-2 border-red-500/50 text-red-500 rounded-2xl font-black text-sm uppercase hover:bg-red-600 hover:text-white transition-all">Bull</button>
+                <button onClick={() => handleScoreInput(0)} className="bg-slate-950 border-2 border-slate-800 text-slate-700 rounded-2xl font-black text-sm uppercase transition-all">Miss</button>
+             </div>
+          </div>
+        </main>
+      </div>
+
+      {showInfo && (
+        <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-8 backdrop-blur-2xl">
+          <div className="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-[3.5rem] p-12 relative shadow-[0_0_100px_rgba(239,68,68,0.1)]">
+            <button onClick={() => setShowInfo(false)} className="absolute top-8 right-8 text-slate-500 hover:text-white transition-colors"><X size={32}/></button>
+            <div className="flex items-center gap-4 mb-8">
+               <div className="p-4 bg-red-600 rounded-3xl shadow-lg shadow-red-900/40">
+                  <Target size={32} className="text-white" />
+               </div>
+               <div>
+                  <h3 className="text-4xl font-black uppercase italic tracking-tighter text-white">{getCurrentModeData()?.name}</h3>
+                  <p className="text-[10px] font-black text-red-500 uppercase tracking-widest">Anleitung & Fokus</p>
+               </div>
+            </div>
+            <p className="text-slate-300 leading-relaxed text-xl mb-10 font-medium">{getCurrentModeData()?.instruction}</p>
+            <button onClick={() => setShowInfo(false)} className="w-full py-6 bg-white text-black font-black rounded-2xl uppercase text-xl shadow-xl active:scale-95 transition-all">Verstanden - Weiter zum Board</button>
+          </div>
+        </div>
+      )}
     </div>
+  );
+};
 
-    <!-- AI HEADER -->
-    <div id="ai-top-bar" class="hidden fixed top-0 left-0 right-0 z-[100] glass px-6 py-2 flex justify-between items-center border-b border-red-500/20">
-        <div class="flex items-center gap-3">
-            <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-            <span id="ai-status-text" class="text-[10px] font-black uppercase text-red-500 tracking-widest">AI Mentor aktiv</span>
-        </div>
-        <div class="flex gap-2">
-            <button onclick="openAIReport()" class="bg-red-600 text-white text-[9px] font-black px-3 py-1.5 rounded-full uppercase">Bericht</button>
-            <button onclick="location.reload()" class="bg-slate-700 text-white text-[9px] font-black px-3 py-1.5 rounded-full uppercase">Reset</button>
-        </div>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <main class="flex-1 overflow-y-auto h-screen relative pt-14">
-        
-        <!-- PAGE 1: SETUP -->
-        <section id="page-setup" class="p-6 lg:p-20 max-w-4xl mx-auto space-y-10">
-            <header>
-                <h2 class="text-5xl font-black italic uppercase tracking-tighter">New <span class="text-red-500">Session</span></h2>
-                <p class="text-slate-400 text-sm font-bold uppercase mt-2">Pädagogisches Setting konfigurieren</p>
-            </header>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Players -->
-                <div class="space-y-4">
-                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Teilnehmeranzahl</label>
-                    <div class="grid grid-cols-4 gap-2">
-                        <button onclick="setPlayerCount(1)" id="pc-1" class="setup-card p-4 rounded-xl font-black selected">1</button>
-                        <button onclick="setPlayerCount(2)" id="pc-2" class="setup-card p-4 rounded-xl font-black">2</button>
-                        <button onclick="setPlayerCount(3)" id="pc-3" class="setup-card p-4 rounded-xl font-black">3</button>
-                        <button onclick="setPlayerCount(4)" id="pc-4" class="setup-card p-4 rounded-xl font-black">4</button>
-                    </div>
-                </div>
-
-                <!-- Mode Dropdown -->
-                <div class="space-y-4">
-                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Spielmodus</label>
-                    <select id="mode-select" class="w-full p-4 glass rounded-xl font-bold text-white outline-none">
-                        <optgroup label="Klassisch">
-                            <option value="501">🏆 501 (Double Out)</option>
-                            <option value="301">🏆 301 (Single Out)</option>
-                            <option value="highscore">📈 Highscore (30 Darts)</option>
-                        </optgroup>
-                        <optgroup label="Pädagogisch / Training">
-                            <option value="atc">⏱️ Around The Clock (Grob-Motorik)</option>
-                            <option value="killer">🗡️ Killer (Frustrationstoleranz)</option>
-                            <option value="elimination">🚫 Elimination (Taktik/Druck)</option>
-                            <option value="bobs27">📉 Bob's 27 (Fokus Double)</option>
-                        </optgroup>
-                    </select>
-                </div>
-
-                <!-- AI Focus Selector -->
-                <div class="space-y-4 md:col-span-2">
-                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest text-center block">KI Beobachtungs-Fokus</label>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <button onclick="setAIFocus('impulskontrolle')" id="ai-f-1" class="setup-card p-4 rounded-xl font-bold text-sm selected">Impulskontrolle</button>
-                        <button onclick="setAIFocus('frustration')" id="ai-f-2" class="setup-card p-4 rounded-xl font-bold text-sm">Frustrationstoleranz</button>
-                        <button onclick="setAIFocus('motorik')" id="ai-f-3" class="setup-card p-4 rounded-xl font-bold text-sm">Motorik & Fokus</button>
-                    </div>
-                </div>
-            </div>
-
-            <button onclick="startGame()" class="w-full py-6 bg-white text-black font-black rounded-2xl uppercase tracking-widest text-xl hover:bg-red-500 hover:text-white transition-all">Einheit Starten</button>
-        </section>
-
-        <!-- PAGE 2: GAME -->
-        <section id="page-game" class="hidden p-4 lg:p-10 space-y-6">
-            <div id="player-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-3"></div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Scorer -->
-                <div class="lg:col-span-2 space-y-4">
-                    <div class="glass p-6 rounded-[2rem] flex justify-between items-center relative overflow-hidden ai-glow">
-                        <div id="checkout-help" class="absolute top-2 left-6 text-[9px] font-black text-red-500 uppercase"></div>
-                        <div class="flex gap-2" id="dart-previews">
-                            <div class="w-12 h-12 lg:w-16 lg:h-16 glass rounded-xl flex items-center justify-center font-black text-2xl">-</div>
-                            <div class="w-12 h-12 lg:w-16 lg:h-16 glass rounded-xl flex items-center justify-center font-black text-2xl">-</div>
-                            <div class="w-12 h-12 lg:w-16 lg:h-16 glass rounded-xl flex items-center justify-center font-black text-2xl">-</div>
-                        </div>
-                        <div class="text-right">
-                            <h3 id="turn-score" class="text-6xl lg:text-7xl font-black italic tabular-nums">0</h3>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-3 gap-2">
-                        <button onclick="setMult(1)" id="mod-1" class="py-3 glass rounded-xl font-black active-mod">SINGLE</button>
-                        <button onclick="setMult(2)" id="mod-2" class="py-3 glass rounded-xl font-black">DOUBLE</button>
-                        <button onclick="setMult(3)" id="mod-3" class="py-3 glass rounded-xl font-black">TRIPLE</button>
-                    </div>
-
-                    <div id="numpad" class="grid grid-cols-5 md:grid-cols-7 gap-1.5"></div>
-
-                    <div class="grid grid-cols-3 gap-2">
-                        <button onclick="hit(0)" class="bg-slate-800 py-5 rounded-xl font-black text-sm uppercase">Miss</button>
-                        <button onclick="hit(25)" class="bg-red-700 py-5 rounded-xl font-black text-sm uppercase">Bull</button>
-                        <button onclick="undo()" class="bg-slate-900 border border-slate-700 py-5 rounded-xl font-bold text-xs text-slate-500">Undo</button>
-                    </div>
-                </div>
-
-                <!-- Info Column -->
-                <div class="space-y-4">
-                    <div class="glass p-6 rounded-2xl text-center">
-                        <div id="timer-label" class="text-[9px] font-black text-slate-500 uppercase mb-1">Session Timer</div>
-                        <div id="session-timer" class="text-3xl font-black text-red-500 tabular-nums">45:00</div>
-                    </div>
-                    <div class="glass p-4 rounded-2xl h-48 lg:h-64">
-                        <canvas id="game-chart"></canvas>
-                    </div>
-                    <div class="bg-red-900/10 border border-red-500/20 p-4 rounded-2xl">
-                        <p class="text-[9px] font-black text-red-500 uppercase mb-2">KI Fokus-Check</p>
-                        <p id="ai-live-note" class="text-xs text-slate-300 italic">Beobachte Wurfrhythmus...</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- REPORT MODAL -->
-    <div id="report-modal" class="fixed inset-0 bg-black/95 hidden z-[3000] flex items-center justify-center p-4 lg:p-12">
-        <div class="bg-slate-900 w-full max-w-2xl rounded-[2.5rem] p-8 border border-slate-800 overflow-y-auto max-h-[90vh]">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-black italic tracking-tighter uppercase">KI <span class="text-red-500">Analyse</span></h2>
-                <button onclick="closeReport()" class="text-slate-500 text-3xl">&times;</button>
-            </div>
-            <div id="report-content" class="text-slate-300 space-y-4 text-sm leading-relaxed">
-                <div class="flex items-center gap-3"><div class="animate-spin w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full"></div> Berichtsdaten werden zusammengestellt...</div>
-            </div>
-            <div class="mt-8 grid grid-cols-2 gap-4">
-                <button onclick="window.print()" class="py-4 glass rounded-xl font-black uppercase text-xs">PDF Speichern</button>
-                <button onclick="closeReport()" class="py-4 bg-red-600 rounded-xl font-black uppercase text-xs">Zurück</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const apiKey = ""; 
-        let config = { device: 'ipad', playerCount: 1, mode: '501', aiFocus: 'impulskontrolle' };
-        let game = { players: [], activeIdx: 0, mult: 1, turn: [], timer: 45 * 60, interval: null, history: [] };
-        let chart;
-
-        function boot(device) {
-            config.device = device;
-            document.getElementById('launcher').style.display = 'none';
-            document.getElementById('app-body').className = 'flex ' + (device === 'iphone' ? 'view-iphone' : 'view-ipad');
-            initNumpad();
-            initChart();
-        }
-
-        function setPlayerCount(n) {
-            config.playerCount = n;
-            document.querySelectorAll('[id^="pc-"]').forEach(b => b.classList.remove('selected'));
-            document.getElementById('pc-'+n).classList.add('selected');
-        }
-
-        function setAIFocus(f) {
-            config.aiFocus = f;
-            document.querySelectorAll('[id^="ai-f-"]').forEach(b => b.classList.remove('selected'));
-            if(f === 'impulskontrolle') document.getElementById('ai-f-1').classList.add('selected');
-            if(f === 'frustration') document.getElementById('ai-f-2').classList.add('selected');
-            if(f === 'motorik') document.getElementById('ai-f-3').classList.add('selected');
-        }
-
-        function startGame() {
-            config.mode = document.getElementById('mode-select').value;
-            game.players = Array.from({length: config.playerCount}, (_, i) => ({
-                name: 'Tln ' + (i+1), 
-                score: (config.mode.startsWith('501') ? 501 : (config.mode === '301' ? 301 : 0)),
-                darts: 0, total: 0, path: []
-            }));
-            game.activeIdx = 0; game.timer = 45 * 60; game.history = [];
-            
-            document.getElementById('page-setup').classList.add('hidden');
-            document.getElementById('page-game').classList.remove('hidden');
-            document.getElementById('ai-top-bar').classList.remove('hidden');
-            
-            renderPlayers();
-            startTimer();
-        }
-
-        function startTimer() {
-            if(game.interval) clearInterval(game.interval);
-            game.interval = setInterval(() => {
-                game.timer--;
-                const m = Math.floor(game.timer/60);
-                const s = game.timer%60;
-                document.getElementById('session-timer').innerText = `${m}:${s.toString().padStart(2,'0')}`;
-                if(game.timer % 300 === 0) updateAILiveNote();
-                if(game.timer <= 0) { clearInterval(game.interval); alert("Einheit beendet!"); }
-            }, 1000);
-        }
-
-        function updateAILiveNote() {
-            const notes = {
-                impulskontrolle: ["Wurfpause einlegen?", "Ruhiges Atmen forcieren.", "Nächster Wurf: Fokus-Check."],
-                frustration: ["Positive Bestärkung nötig?", "Kleine Ziele setzen.", "Erfolgserlebnis suchen."],
-                motorik: ["Standposition prüfen.", "Wurfarm-Stabilität?", "Gleichmäßiger Rhythmus."]
-            };
-            const f = notes[config.aiFocus];
-            document.getElementById('ai-live-note').innerText = f[Math.floor(Math.random()*f.length)];
-        }
-
-        function hit(val) {
-            const pts = val * game.mult;
-            const p = game.players[game.activeIdx];
-            
-            if(config.mode.includes('501') || config.mode === '301') {
-                if(p.score - pts >= 2 || p.score - pts === 0) p.score -= pts;
-                if(p.score === 0) { confetti(); alert(p.name + " hat gewonnen!"); }
-            } else {
-                p.score += pts;
-            }
-
-            p.darts++; p.total += pts; p.path.push(p.score);
-            game.turn.push(pts);
-            game.history.push({pIdx: game.activeIdx, val: pts});
-
-            if(game.turn.length === 3) {
-                game.turn = [];
-                game.activeIdx = (game.activeIdx + 1) % config.playerCount;
-            }
-
-            game.mult = 1;
-            updateUI();
-        }
-
-        function setMult(m) {
-            game.mult = m;
-            document.querySelectorAll('[id^="mod-"]').forEach(b => b.classList.remove('active-mod'));
-            document.getElementById('mod-'+m).classList.add('active-mod');
-        }
-
-        function renderPlayers() {
-            document.getElementById('player-grid').innerHTML = game.players.map((p, i) => `
-                <div class="player-card ${i===game.activeIdx?'active':''}">
-                    <div class="flex justify-between text-[8px] font-black text-slate-500 uppercase mb-1">
-                        <span>${p.name}</span><span>${p.darts}D</span>
-                    </div>
-                    <div class="text-3xl font-black text-white">${p.score}</div>
-                </div>
-            `).join('');
-        }
-
-        function updateUI() {
-            renderPlayers();
-            const divs = document.getElementById('dart-previews').children;
-            for(let i=0; i<3; i++) {
-                const v = game.turn[i];
-                divs[i].innerText = v !== undefined ? v : "-";
-                divs[i].className = `w-12 h-12 lg:w-16 lg:h-16 rounded-xl flex items-center justify-center font-black text-2xl ${v!==undefined?'bg-red-600 text-white':'glass text-slate-700'}`;
-            }
-            document.getElementById('turn-score').innerText = game.turn.reduce((a,b)=>a+b, 0);
-            updateChart();
-            
-            // Checkout Helper
-            const cp = game.players[game.activeIdx];
-            const help = document.getElementById('checkout-help');
-            if(config.mode.includes('501') && cp.score <= 170) {
-                help.innerText = cp.score <= 40 && cp.score % 2 === 0 ? `Target: D${cp.score/2}` : "Finish möglich";
-            } else help.innerText = "";
-        }
-
-        async function openAIReport() {
-            document.getElementById('report-modal').classList.remove('hidden');
-            const content = document.getElementById('report-content');
-            
-            const prompt = `Analysiere als Dipl. Sozialpädagoge für die AWO KV Wesel diese Dart-Einheit. 
-                Modus: ${config.mode}, Fokus: ${config.aiFocus}.
-                Daten: ${JSON.stringify(game.players)}.
-                Erstelle einen Bericht mit: 
-                1. Beobachtungen zur ${config.aiFocus}.
-                2. Soziale Interaktion & Frustlevel.
-                3. Empfehlung für die Dokumentation. 
-                Kurz und prägnant halten.`;
-
-            try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                });
-                const data = await res.json();
-                content.innerHTML = `<div class="prose prose-invert prose-sm">${data.candidates[0].content.parts[0].text.replace(/\n/g, '<br>')}</div>`;
-            } catch (e) { content.innerHTML = "Berichtsberechnung fehlgeschlagen. Pädagogisches Bauchgefühl nutzen!"; }
-        }
-
-        function closeReport() { document.getElementById('report-modal').classList.add('hidden'); }
-
-        function undo() {
-            if(!game.history.length) return;
-            const last = game.history.pop();
-            const p = game.players[last.pIdx];
-            if(config.mode.includes('501') || config.mode === '301') p.score += last.val; else p.score -= last.val;
-            p.darts--; p.path.pop();
-            game.activeIdx = last.pIdx;
-            game.turn = []; 
-            updateUI();
-        }
-
-        function initNumpad() {
-            const n = document.getElementById('numpad');
-            [20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1].forEach(i => {
-                const b = document.createElement('button');
-                b.className = 'key-btn text-sm';
-                b.innerText = i;
-                b.onclick = () => hit(i);
-                n.appendChild(b);
-            });
-        }
-
-        function initChart() {
-            chart = new Chart(document.getElementById('game-chart'), {
-                type: 'line',
-                data: { labels: [], datasets: [{ label: 'Score', data: [], borderColor: '#ef4444', tension: 0.4, fill: true, backgroundColor: 'rgba(239,68,68,0.05)' }] },
-                options: { plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{display:false}}, responsive: true, maintainAspectRatio: false }
-            });
-        }
-
-        function updateChart() {
-            const p = game.players[game.activeIdx];
-            chart.data.labels = p.path.map((_, i) => i);
-            chart.data.datasets[0].data = p.path;
-            chart.update('none');
-        }
-    </script>
-</body>
-</html>
+export default App;
 

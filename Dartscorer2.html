@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="DartScorer">
+    
+    <!-- Professionelles App Icon für iPad Pro Home-Bildschirm -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%230f172a'/%3E%3Ccircle cx='90' cy='90' r='60' stroke='%2338bdf8' stroke-width='8' fill='none'/%3E%3Ccircle cx='90' cy='90' r='40' stroke='%2338bdf8' stroke-width='4' fill='none' opacity='0.5'/%3E%3Cpath d='M90 30 L90 150 M30 90 L150 90' stroke='%2338bdf8' stroke-width='4'/%3E%3Ccircle cx='90' cy='90' r='10' fill='%23f43f5e'/%3E%3C/svg%3E">
+
+    <title>Dart Scorer - AWO Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+        .keypad-btn { @apply bg-slate-800 py-4 rounded-xl text-2xl font-bold active:bg-sky-600 active:scale-95 transition-all shadow-md border border-slate-700/50 flex items-center justify-center; }
+        .multiplier-btn { @apply py-4 rounded-xl text-xs font-black transition-all border border-slate-600 uppercase tracking-widest; }
+        .player-card { @apply bg-slate-800/40 p-5 rounded-3xl border-2 transition-all duration-300; }
+        .active-player { @apply border-sky-500 bg-slate-800 shadow-[0_0_30px_rgba(14,165,233,0.3)]; scale: 1.02; }
+        .inactive-player { @apply border-transparent opacity-30; }
+        .dart-slot { @apply w-14 h-14 rounded-full border-2 border-slate-700 flex items-center justify-center font-bold text-xl transition-all; }
+        .active-dart { @apply border-sky-400 text-sky-400 bg-sky-400/10 shadow-[0_0_10px_rgba(56,189,248,0.5)]; }
+        /* iPad Pro M5 Optimierung für sicheren Bereich */
+        @supports (padding: env(safe-area-inset-top)) {
+            body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+        }
+    </style>
+</head>
+<body class="p-6 max-w-4xl mx-auto min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-black text-sky-400 tracking-tighter">PRO SCORER</h1>
+            <p class="text-slate-500 text-xs font-bold tracking-widest uppercase">AWO KV Wesel | iPad Pro M5</p>
+        </div>
+        <div class="flex bg-slate-800 p-1.5 rounded-2xl shadow-inner border border-slate-700/50">
+            <button id="btnP1" onclick="setPlayers(1)" class="px-6 py-2 rounded-xl text-sm font-black bg-sky-600 shadow-lg transition-all">1P</button>
+            <button id="btnP2" onclick="setPlayers(2)" class="px-6 py-2 rounded-xl text-sm font-black bg-slate-800 text-slate-500 ml-1 transition-all">2P</button>
+        </div>
+    </header>
+
+    <!-- Players -->
+    <div class="grid grid-cols-2 gap-6 mb-8">
+        <div id="cardP0" class="player-card active-player">
+            <div class="flex justify-between items-center mb-3">
+                <span class="px-3 py-1 bg-sky-500/20 text-sky-400 rounded-full text-[10px] font-black uppercase">Spieler 1</span>
+                <span id="p0-avg" class="text-xs font-mono text-slate-400">AVG: 0.0</span>
+            </div>
+            <div id="p0-score" class="text-8xl font-black text-center py-4 tabular-nums">501</div>
+            <div id="p0-check" class="text-sm text-emerald-400 text-center font-bold h-6 tracking-wide"></div>
+        </div>
+
+        <div id="cardP1" class="player-card inactive-player hidden">
+            <div class="flex justify-between items-center mb-3">
+                <span class="px-3 py-1 bg-pink-500/20 text-pink-500 rounded-full text-[10px] font-black uppercase">Spieler 2</span>
+                <span id="p1-avg" class="text-xs font-mono text-slate-400">AVG: 0.0</span>
+            </div>
+            <div id="p1-score" class="text-8xl font-black text-center py-4 tabular-nums">501</div>
+            <div id="p1-check" class="text-sm text-emerald-400 text-center font-bold h-6 tracking-wide"></div>
+        </div>
+    </div>
+
+    <!-- Current Round -->
+    <div class="flex justify-center gap-8 mb-10">
+        <div id="slot0" class="dart-slot active-dart">-</div>
+        <div id="slot1" class="dart-slot">-</div>
+        <div id="slot2" class="dart-slot">-</div>
+    </div>
+
+    <!-- Multipliers -->
+    <div class="grid grid-cols-3 gap-4 mb-6">
+        <button onclick="setMult(1)" id="m1" class="multiplier-btn bg-sky-600 text-white shadow-lg shadow-sky-900/20">Single</button>
+        <button onclick="setMult(2)" id="m2" class="multiplier-btn bg-slate-800 text-slate-400">Double</button>
+        <button onclick="setMult(3)" id="m3" class="multiplier-btn bg-slate-800 text-slate-400">Triple</button>
+    </div>
+
+    <!-- Board Numbers -->
+    <div class="grid grid-cols-5 gap-3 mb-6">
+        <!-- Generiert 20, 1-19 -->
+        <button onclick="press(20)" class="keypad-btn bg-slate-700/80 ring-2 ring-slate-600">20</button>
+        <script>
+            for(let i=1; i<=19; i++) {
+                if(i === 20) continue;
+                document.write(`<button onclick="press(${i})" class="keypad-btn">${i}</button>`);
+            }
+        </script>
+    </div>
+
+    <!-- Bottom Controls -->
+    <div class="grid grid-cols-4 gap-3 mb-8">
+        <button onclick="press(0)" class="keypad-btn text-slate-500 text-lg">MISS</button>
+        <button onclick="press(25)" class="keypad-btn text-rose-500 text-lg ring-2 ring-rose-500/20">BULL</button>
+        <button onclick="undo()" class="keypad-btn text-amber-500 text-lg">UNDO</button>
+        <button onclick="resetGame()" class="keypad-btn text-red-500 text-lg">RESET</button>
+    </div>
+
+    <!-- Numbers Export -->
+    <button onclick="copyToNumbers()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-5 rounded-2xl font-black text-base uppercase tracking-[0.2em] transition-all shadow-xl active:scale-[0.97] mb-4">
+        Statistik für Numbers kopieren
+    </button>
+
+    <script>
+        const checkouts = {
+            170: "T20 T20 Bull", 167: "T20 T19 Bull", 164: "T20 T18 Bull", 161: "T20 T17 Bull", 160: "T20 T20 D20",
+            150: "T20 T18 D18", 140: "T20 T20 D10", 121: "T20 T11 D14", 100: "T20 D20", 80: "T20 D10", 60: "S20 D20", 
+            50: "BULL", 40: "D20", 32: "D16", 16: "D8", 8: "D4", 4: "D2", 2: "D1"
+        };
+
+        let numPlayers = 1;
+        let currentPlayer = 0;
+        let players = [{score:501, darts:0, log:[]}, {score:501, darts:0, log:[]}];
+        let currentRound = [];
+        let multiplier = 1;
+
+        function setPlayers(n) {
+            numPlayers = n;
+            document.getElementById('cardP1').classList.toggle('hidden', n === 1);
+            document.getElementById('btnP1').className = n === 1 ? 'px-6 py-2 rounded-xl text-sm font-black bg-sky-600 shadow-lg' : 'px-6 py-2 rounded-xl text-sm font-black bg-slate-800 text-slate-500 ml-1';
+            document.getElementById('btnP2').className = n === 2 ? 'px-6 py-2 rounded-xl text-sm font-black bg-sky-600 shadow-lg ml-1' : 'px-6 py-2 rounded-xl text-sm font-black bg-slate-800 text-slate-500 ml-1';
+            resetGame();
+        }
+
+        function setMult(m) {
+            multiplier = m;
+            ['m1', 'm2', 'm3'].forEach((id, i) => {
+                document.getElementById(id).className = (i+1 === m) ? 
+                    'multiplier-btn bg-sky-600 text-white shadow-lg' : 'multiplier-btn bg-slate-800 text-slate-400';
+            });
+        }
+
+        function press(val) {
+            let pts = val * multiplier;
+            if (val === 25 && multiplier === 3) return; 
+            if (pts > 60 && val !== 25) return;
+
+            const p = players[currentPlayer];
+            if (p.score - pts < 0 || p.score - pts === 1) {
+                showToast("BUST! ❌");
+                saveRound(true);
+            } else {
+                p.score -= pts;
+                p.darts += 1;
+                currentRound.push(pts);
+                
+                if (p.score === 0) {
+                    showToast("LEG GEWONNEN! 🏆");
+                    saveRound();
+                } else if (currentRound.length === 3) {
+                    saveRound();
+                }
+            }
+            setMult(1);
+            updateUI();
+        }
+
+        function saveRound(bust = false) {
+            const p = players[currentPlayer];
+            p.log.push({
+                pts: currentRound.reduce((a,b)=>a+b, 0),
+                rest: p.score,
+                darts: p.darts,
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            });
+            currentRound = [];
+            if (numPlayers === 2) currentPlayer = currentPlayer === 0 ? 1 : 0;
+        }
+
+        function undo() {
+            if (currentRound.length > 0) {
+                players[currentPlayer].score += currentRound.pop();
+                players[currentPlayer].darts -= 1;
+            }
+            updateUI();
+        }
+
+        function updateUI() {
+            players.forEach((p, i) => {
+                document.getElementById(`p${i}-score`).innerText = p.score;
+                const avg = p.darts > 0 ? ((501 - p.score) / p.darts * 3).toFixed(1) : "0.0";
+                document.getElementById(`p${i}-avg`).innerText = `AVG: ${avg}`;
+                document.getElementById(`p${i}-check`).innerText = p.score <= 170 ? (checkouts[p.score] || "") : "";
+                document.getElementById(`cardP${i}`).className = `player-card ${currentPlayer === i ? 'active-player' : 'inactive-player'}`;
+            });
+
+            for(let i=0; i<3; i++) {
+                const s = document.getElementById(`slot${i}`);
+                s.innerText = currentRound[i] !== undefined ? currentRound[i] : "-";
+                s.className = `dart-slot ${currentRound.length === i ? 'active-dart' : ''}`;
+            }
+        }
+
+        function resetGame() {
+            players = [{score:501, darts:0, log:[]}, {score:501, darts:0, log:[]}];
+            currentPlayer = 0; currentRound = [];
+            updateUI();
+        }
+
+        function copyToNumbers() {
+            let csv = "Spieler;Zeit;Wurf;Restscore;Darts Gesamt\n";
+            players.forEach((p, i) => p.log.forEach(l => {
+                csv += `P${i+1};${l.time};${l.pts};${l.rest};${l.darts}\n`;
+            }));
+            const el = document.createElement('textarea');
+            el.value = csv; document.body.appendChild(el);
+            el.select(); document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast("Statistik für Numbers kopiert! ✅");
+        }
+
+        function showToast(m) {
+            const t = document.createElement('div');
+            t.className = "fixed top-20 left-1/2 -translate-x-1/2 bg-sky-500 text-white px-12 py-5 rounded-3xl shadow-2xl font-black z-50 animate-bounce";
+            t.innerText = m; document.body.appendChild(t);
+            setTimeout(() => t.remove(), 2000);
+        }
+
+        updateUI();
+    </script>
+</body>
+</html>
+
+

@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Henry Kapelly - Trainingsedition</title>
+    
+    <!-- Apple Home Screen Integration -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HK Trainings">
+    <link rel="apple-touch-icon" href="image.png">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -15,6 +22,8 @@
         @keyframes pulse-red { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         .analyzing { animation: pulse-red 2s infinite; }
         .logo-circle { width: 128px; height: 128px; border-radius: 50%; border: 4px solid #dc2626; object-fit: cover; background: white; cursor: pointer; }
+        /* Sicherstellung der Touch-Größen für iPad */
+        button { touch-action: manipulation; }
     </style>
 </head>
 <body>
@@ -29,22 +38,22 @@
             MATCH: {
                 label: "Wettkampf-Modi",
                 modes: {
-                    SCORING_501: { name: "501 (Double Out)", startScore: 501, instruction: "Klassisches Turnierspiel. Beende exakt auf 0 mit einem Doppel.", tips: "Mathematik unter Druck." },
-                    SCORING_301: { name: "301 (Single Out)", startScore: 301, instruction: "Beende auf 0 mit beliebigem Treffer.", tips: "Pädagogischer Quick-Win." }
+                    SCORING_501: { name: "501 (Double Out)", startScore: 501, instruction: "Turnier-Standard. Beende auf 0 mit einem Doppel.", tips: "Fördert das mathematische Denken." },
+                    SCORING_301: { name: "301 (Single Out)", startScore: 301, instruction: "Schneller Abschluss auf 0 mit beliebigem Feld.", tips: "Erfolgserlebnisse für Einsteiger." }
                 }
             },
             EXERCISES: {
                 label: "Gezielte Übungen",
                 modes: {
-                    BOBS_27: { name: "Bob's 27", startScore: 27, instruction: "Wirf auf Doppel 1 bis Bull. Treffer addieren, Fehlwürfe ziehen ab.", tips: "Frustrationstoleranz trainieren." },
-                    AROUND_THE_CLOCK: { name: "Around The Clock", startScore: 0, instruction: "Triff Segmente 1 bis 20 nacheinander.", tips: "Fokus-Steuerung." },
-                    SHANGHAI: { name: "Shanghai", startScore: 0, instruction: "Triff S, D und T einer Zahl in einer Aufnahme.", tips: "Präzision in der Gruppe." }
+                    BOBS_27: { name: "Bob's 27", startScore: 27, instruction: "Wirf auf Doppel 1 bis Bull. Treffer addieren, Fehlwürfe subtrahieren.", tips: "Training der Resilienz." },
+                    AROUND_THE_CLOCK: { name: "Around The Clock", startScore: 0, instruction: "Triff Segmente 1 bis 20 nacheinander.", tips: "Fokus und Ausdauer." },
+                    SHANGHAI: { name: "Shanghai", startScore: 0, instruction: "Triff Single, Double und Triple einer Zahl in einer Aufnahme.", tips: "Präzisionstraining." }
                 }
             },
             ANALYSIS: {
                 label: "Spezial-Analysen",
                 modes: {
-                    CATCH_121: { name: "121 Check (Analyse)", startScore: 121, instruction: "Checke 121 in 3 Aufnahmen (9 Darts). Ende auf Doppel.", tips: "Strategie-Analyse für den AWO-Kontext." }
+                    CATCH_121: { name: "121 Check (Analyse)", startScore: 121, instruction: "Checke 121 in max. 9 Darts (3 Aufnahmen). Ende auf Doppel.", tips: "Strategie-Check für Profis." }
                 }
             }
         };
@@ -69,7 +78,12 @@
                 const file = e.target.files[0];
                 if (file) {
                     const reader = new FileReader();
-                    reader.onload = (ev) => setLogoUrl(ev.target.result);
+                    reader.onload = (ev) => {
+                        setLogoUrl(ev.target.result);
+                        // Versuche das Apple Touch Icon dynamisch zu aktualisieren
+                        let link = document.querySelector("link[rel*='apple-touch-icon']");
+                        if (link) link.href = ev.target.result;
+                    };
                     reader.readAsDataURL(file);
                 }
             };
@@ -83,7 +97,7 @@
 
             const initGame = () => {
                 setPlayers(Array.from({ length: playerCount }, (_, i) => ({
-                    id: i, name: `Spieler ${i + 1}`, score: currentModeData.startScore, step: 1, dartsThrown: 0, isGameOver: false
+                    id: i, name: `Spieler ${i + 1}`, score: currentModeData.startScore, step: 1, isGameOver: false
                 })));
                 setView('playing');
             };
@@ -91,7 +105,7 @@
             const getAIAdvice = async () => {
                 setIsAnalyzing(true);
                 const p = players[activeIdx];
-                const prompt = `Analysiere als Dipl. Sozialpädagoge der AWO KV Wesel: Henry Kapelly (Score: ${p.score}, Modus: ${currentModeData.name}). Gib einen kurzen, motivierenden Tipp (max. 1 Satz).`;
+                const prompt = `Analysiere als Dipl. Sozialpädagoge der AWO KV Wesel: Henry Kapelly (Score: ${p.score}, Modus: ${currentModeData.name}). Gib einen kurzen, motivierenden Tipp (max. 15 Wörter).`;
                 try {
                     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
                         method: 'POST',
@@ -99,8 +113,8 @@
                         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                     });
                     const data = await res.json();
-                    setAiAnalysis(data.candidates?.[0]?.content?.parts?.[0]?.text || "Fokus bewahren!");
-                } catch { setAiAnalysis("Konzentration ist der Schlüssel zum Erfolg!"); }
+                    setAiAnalysis(data.candidates?.[0]?.content?.parts?.[0]?.text || "Fokus!");
+                } catch { setAiAnalysis("Konzentration ist alles!"); }
                 setIsAnalyzing(false);
             };
 
@@ -125,7 +139,7 @@
                 else if (selectedMode === 'CATCH_121') {
                     if (turnSum === p.score && lastDart.m === 2) { p.score = 0; p.isGameOver = true; }
                     else if (turnSum < p.score && (p.score - turnSum) > 1) p.score -= turnSum;
-                    p.step++; // Nutze Step als Zähler für Aufnahmen (1-3)
+                    p.step++;
                     if (p.step > 3 && p.score > 0) p.isGameOver = true;
                 }
                 else {
@@ -153,6 +167,7 @@
                         <img src={logoUrl} className="logo-circle mx-auto mb-6" onClick={() => fileInputRef.current.click()} />
                         <h1 className="text-4xl font-black italic uppercase tracking-tighter">Henry <span className="text-red-600">Kapelly</span></h1>
                         <p className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.4em] mt-3 mb-10">AWO KV Wesel • Trainingsedition</p>
+                        
                         <div className="space-y-8 text-left">
                             <section>
                                 <div className="flex justify-between items-center mb-4">
@@ -168,7 +183,7 @@
                                 </select>
                             </section>
                             <section>
-                                <label className="text-[10px] font-black text-slate-500 uppercase block mb-4 tracking-widest">Spieleranzahl</label>
+                                <label className="text-[10px] font-black text-slate-500 uppercase block mb-4 tracking-widest">Spieler</label>
                                 <div className="grid grid-cols-6 gap-3">
                                     {[1, 2, 3, 4, 5, 6].map(n => (
                                         <button key={n} onClick={() => setPlayerCount(n)} className={`py-5 rounded-2xl font-black text-xl transition-all ${playerCount === n ? 'bg-red-600 shadow-lg scale-110' : 'bg-slate-800 text-slate-500'}`}>{n}</button>
@@ -185,9 +200,9 @@
                                 <h2 className="text-3xl font-black uppercase italic mb-6 text-red-500 tracking-tighter">{currentModeData.name}</h2>
                                 <p className="text-xl mb-6 font-medium text-slate-200">{currentModeData.instruction}</p>
                                 <div className="p-8 bg-red-600/10 rounded-3xl border border-red-500/20">
-                                    <p className="text-sm italic font-bold leading-relaxed">AWO-Pädagogik-Tipp: {currentModeData.tips}</p>
+                                    <p className="text-sm italic font-bold leading-relaxed">AWO-Tipp: {currentModeData.tips}</p>
                                 </div>
-                                <button onClick={() => setShowHelp(false)} className="w-full mt-8 py-5 bg-white text-black rounded-3xl font-black uppercase">Verstanden</button>
+                                <button onClick={() => setShowHelp(false)} className="w-full mt-8 py-5 bg-white text-black rounded-3xl font-black uppercase">Schließen</button>
                             </div>
                         </div>
                     )}
@@ -199,10 +214,10 @@
                     <header className="px-10 py-5 bg-slate-900/50 flex justify-between items-center border-b border-white/5 shrink-0">
                         <div className="flex items-center gap-4">
                             <img src={logoUrl} className="w-10 h-10 rounded-full border border-red-600 object-cover" />
-                            <span className="font-black italic uppercase text-lg tracking-tighter">HK <span className="text-red-600">Analyze</span></span>
+                            <span className="font-black italic uppercase text-lg tracking-tighter">HK <span className="text-red-600">Train</span></span>
                         </div>
                         <button onClick={getAIAdvice} className={`px-8 py-3 rounded-full border border-red-600 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 ${isAnalyzing ? 'analyzing' : ''}`}>
-                            <i data-lucide="sparkles" size={14}></i> Analyse erstellen
+                            <i data-lucide="sparkles" size={14}></i> Analyse
                         </button>
                         <button onClick={() => setView('setup')} className="text-slate-500 hover:text-white transition-colors"><i data-lucide="home"></i></button>
                     </header>
@@ -224,11 +239,11 @@
                             {aiAnalysis && (
                                 <div className="absolute top-6 glass p-8 rounded-[3rem] border-red-600/40 w-[90%] max-w-xl shadow-2xl z-50 animate-bounce flex items-center gap-6">
                                     <img src={logoUrl} className="w-16 h-16 rounded-2xl border border-red-600" />
-                                    <div className="flex-1">
-                                        <div className="text-[10px] font-black text-red-500 uppercase mb-1 tracking-widest">Henry Kapelly Analyse</div>
-                                        <p className="font-bold italic text-white leading-tight">{aiAnalysis}</p>
+                                    <div className="flex-1 text-white">
+                                        <div className="text-[10px] font-black text-red-500 uppercase mb-1 tracking-widest">Henry Kapelly</div>
+                                        <p className="font-bold italic leading-tight">{aiAnalysis}</p>
                                     </div>
-                                    <button onClick={() => setAiAnalysis("")} className="text-slate-500 hover:text-white"><i data-lucide="x"></i></button>
+                                    <button onClick={() => setAiAnalysis("")} className="text-slate-500"><i data-lucide="x"></i></button>
                                 </div>
                             )}
 
@@ -248,7 +263,7 @@
                                 <div className="flex flex-col gap-2">
                                     {[1, 2, 3].map(m => (
                                         <button key={m} onClick={() => setMultiplier(m)} className={`flex-1 rounded-2xl font-black border-2 transition-all ${multiplier === m ? 'bg-white text-black border-white' : 'bg-slate-900 border-slate-800 text-slate-600 text-[10px] uppercase tracking-widest'}`}>
-                                            {m === 1 ? 'Single' : m === 2 ? 'Double' : 'Triple'}
+                                            {m === 1 ? 'S' : m === 2 ? 'D' : 'T'}
                                         </button>
                                     ))}
                                 </div>
@@ -256,8 +271,8 @@
                                     {[20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map(n => (
                                         <button key={n} onClick={() => { if(turnDarts.length < 3) setTurnDarts([...turnDarts, {v:n, m:multiplier}]); setMultiplier(1); }} className="bg-slate-900 border border-white/5 py-6 rounded-2xl font-black text-2xl active:bg-red-600 transition-all">{n}</button>
                                     ))}
-                                    <button onClick={() => { if(turnDarts.length < 3) setTurnDarts([...turnDarts, {v:25, m:multiplier}]); setMultiplier(1); }} className="bg-red-900/40 text-red-500 rounded-2xl font-black uppercase text-xs tracking-widest">Bull</button>
-                                    <button onClick={() => { if(turnDarts.length < 3) setTurnDarts([...turnDarts, {v:0, m:1}]); setMultiplier(1); }} className="bg-slate-950 text-slate-800 rounded-2xl font-black text-[10px] uppercase tracking-tighter">Miss</button>
+                                    <button onClick={() => { if(turnDarts.length < 3) setTurnDarts([...turnDarts, {v:25, m:multiplier}]); setMultiplier(1); }} className="bg-red-900/40 text-red-500 rounded-2xl font-black text-xs">BULL</button>
+                                    <button onClick={() => { if(turnDarts.length < 3) setTurnDarts([...turnDarts, {v:0, m:1}]); setMultiplier(1); }} className="bg-slate-950 text-slate-800 rounded-2xl font-black text-[10px] uppercase tracking-tighter">MISS</button>
                                 </div>
                             </div>
                         </main>
